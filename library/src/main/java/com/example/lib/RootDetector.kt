@@ -76,7 +76,7 @@ class RootDetector : IDetection{
         return isRoot
     }
 
-    // 查特定路径是否有写权限 todo 无效
+    // 查特定路径是否有写权限
     private fun checkForRWPaths() {
         val pathsThatShouldNotBeWritable = arrayOf(
             "/system",
@@ -86,20 +86,18 @@ class RootDetector : IDetection{
             "/vendor/bin",
             "/sbin",
             "/etc",
-            "/sys",
-            "/proc",
-            "/dev"
         )
 
         try {
             val inputStream = Runtime.getRuntime().exec("mount").inputStream ?: return
             val propVal = Scanner(inputStream).useDelimiter("\\A").next()
             val lines = propVal.split("\n")
-
+            Log.d(TAG, "lines: $lines")
             val sdkVersion = android.os.Build.VERSION.SDK_INT
 
             for (line in lines) {
                 val args = line.split(" ")
+                Log.d(TAG, "args: $args")
 
                 if ((sdkVersion <= android.os.Build.VERSION_CODES.M && args.size < 4) ||
                     (sdkVersion > android.os.Build.VERSION_CODES.M && args.size < 6)
@@ -125,7 +123,7 @@ class RootDetector : IDetection{
                         val cleanedMountOptions = mountOptions.replace("(", "").replace(")", "")
                         if (cleanedMountOptions.split(",").any { it.equals("rw", ignoreCase = true) }) {
                             Log.e(TAG, "$mountPoint 路径以rw权限挂载! $line")
-                            detectedResults.add("$mountPoint 路径以rw权限挂载! $line")
+                            detectedResults.add("$mountPoint 路径以rw权限挂载! $line \n")
                         }
                     }
                 }
