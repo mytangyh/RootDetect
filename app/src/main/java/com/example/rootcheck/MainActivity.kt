@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
         init()
     }
     private fun init(){
+//        getExternalFilesDir(null)
 
 
         mbinding.checkBtn.setOnClickListener {

@@ -2,6 +2,8 @@ package com.example.lib
 
 import android.util.Log
 import java.io.File
+import java.io.IOException
+import java.util.Scanner
 
 /**
  * Author : Administrator
@@ -73,31 +75,76 @@ class RootDetector : IDetection{
         }
         return isRoot
     }
-    // 查特定路径是否有写权限
-    private fun detectWritePermission(): Boolean {
-        val places = arrayOf(
+
+    // 查特定路径是否有写权限 todo 无效
+    private fun checkForRWPaths() {
+        val pathsThatShouldNotBeWritable = arrayOf(
             "/system",
             "/system/bin",
             "/system/sbin",
             "/system/xbin",
             "/vendor/bin",
-            "/sys",
             "/sbin",
             "/etc",
+            "/sys",
             "/proc",
             "/dev"
         )
-        val results = places.map { place ->
-            val file = File(place)
-            file.canWrite()
+
+        try {
+            val inputStream = Runtime.getRuntime().exec("mount").inputStream ?: return
+            val propVal = Scanner(inputStream).useDelimiter("\\A").next()
+            val lines = propVal.split("\n")
+
+            val sdkVersion = android.os.Build.VERSION.SDK_INT
+
+            for (line in lines) {
+                val args = line.split(" ")
+
+                if ((sdkVersion <= android.os.Build.VERSION_CODES.M && args.size < 4) ||
+                    (sdkVersion > android.os.Build.VERSION_CODES.M && args.size < 6)
+                ) {
+                    Log.e(TAG, "Error formatting mount line: $line")
+                    detectedResults.add("Error formatting mount line: $line")
+                    continue
+                }
+
+                val mountPoint: String
+                val mountOptions: String
+
+                if (sdkVersion > android.os.Build.VERSION_CODES.M) {
+                    mountPoint = args[2]
+                    mountOptions = args[5]
+                } else {
+                    mountPoint = args[1]
+                    mountOptions = args[3]
+                }
+
+                if (pathsThatShouldNotBeWritable.any { it.equals(mountPoint, ignoreCase = true) }) {
+                    if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) {
+                        val cleanedMountOptions = mountOptions.replace("(", "").replace(")", "")
+                        if (cleanedMountOptions.split(",").any { it.equals("rw", ignoreCase = true) }) {
+                            Log.e(TAG, "$mountPoint 路径以rw权限挂载! $line")
+                            detectedResults.add("$mountPoint 路径以rw权限挂载! $line")
+                        }
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, "Error reading mount information", e)
+        } catch (e: NoSuchElementException) {
+            Log.e(TAG, "Error reading mount information", e)
         }
-        detectedResults.add("Write permission:${results.toList()}")
-        return results.any { it }
     }
+
+    companion object {
+        private const val TAG = "MountChecker"
+    }
+
     override fun isDetected(): Boolean {
-        detectWritePermission()
         detectRootPermission()
         detectFiles()
+        checkForRWPaths()
         return true
     }
 
