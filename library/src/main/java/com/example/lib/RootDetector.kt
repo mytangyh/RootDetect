@@ -117,8 +117,7 @@ class RootDetector : IDetection {
      *
      * @return 如果发现挂载为可写权限，则返回true；否则返回false。
      */
-    private fun checkForRWPaths(): Boolean {
-        // 定义需要检测的目录路径
+    private fun isPathWritable(mountPoint: String, mountOptions: String): Boolean {
         val pathsThatShouldNotBeWritable = arrayOf(
             "/system",
             "/system/bin",
@@ -126,32 +125,36 @@ class RootDetector : IDetection {
             "/system/xbin",
             "/vendor/bin",
             "/sbin",
-            "/etc",
+            "/etc"
         )
+
+        if (pathsThatShouldNotBeWritable.any { it.equals(mountPoint, ignoreCase = true) }) {
+            val cleanedMountOptions = mountOptions.replace("(", "").replace(")", "")
+            return cleanedMountOptions.split(",").any { it.equals("rw", ignoreCase = true) }
+        }
+        return false
+    }
+
+    private fun getMountPointIndex(sdkVersion: Int): Int {
+        return if (sdkVersion > android.os.Build.VERSION_CODES.M) 2 else 1
+    }
+
+    private fun getMountOptionsIndex(sdkVersion: Int): Int {
+        return if (sdkVersion > android.os.Build.VERSION_CODES.M) 5 else 3
+    }
+
+    private fun checkForRWPaths(): Boolean {
         try {
-            // 获取挂载信息的输入流
             val inputStream = Runtime.getRuntime().exec("mount").inputStream ?: return false
-            // 读取挂载信息
             val propVal = inputStream.bufferedReader().use { it.readText() }
-            // 拆分挂载信息为多行
             val lines = propVal.split("\n")
-            // 获取设备的SDK版本
             val sdkVersion = android.os.Build.VERSION.SDK_INT
 
             for (line in lines) {
                 val args = line.split(" ")
+                val mountPointIndex = getMountPointIndex(sdkVersion)
+                val mountOptionsIndex = getMountOptionsIndex(sdkVersion)
 
-                // 根据SDK版本确定挂载点和挂载选项的位置
-                val mountPointIndex = when {
-                    sdkVersion > android.os.Build.VERSION_CODES.M -> 2
-                    else -> 1
-                }
-                val mountOptionsIndex = when {
-                    sdkVersion > android.os.Build.VERSION_CODES.M -> 5
-                    else -> 3
-                }
-
-                // 检查挂载点和挂载选项是否足够
                 if (args.size < mountPointIndex + 1 || args.size < mountOptionsIndex + 1) {
                     continue
                 }
@@ -159,25 +162,17 @@ class RootDetector : IDetection {
                 val mountPoint = args[mountPointIndex]
                 val mountOptions = args[mountOptionsIndex]
 
-                // 检查挂载点是否在不应该具有可写权限的目录中
-                if (pathsThatShouldNotBeWritable.any { it.equals(mountPoint, ignoreCase = true) }) {
-                    if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.M) {
-                        val cleanedMountOptions = mountOptions.replace("(", "").replace(")", "")
-                        // 检查挂载选项是否包含"rw"权限
-                        if (cleanedMountOptions.split(",").any { it.equals("rw", ignoreCase = true) }) {
-                            // 发现可写的挂载点，记录并返回true
-                            detectedResults.add("$mountPoint 路径以rw权限挂载! $line \n")
-                            return true
-                        }
-                    }
+                if (isPathWritable(mountPoint, mountOptions)) {
+                    detectedResults.add("$mountPoint 路径以rw权限挂载! $line \n")
+                    return true
                 }
             }
         } catch (e: IOException) {
             return false
         }
-        // 未发现可写的挂载点，返回false
         return false
     }
+
 
     /**
      * 检查设备是否具有调试模式。
@@ -219,17 +214,7 @@ class RootDetector : IDetection {
 
 
     override fun isDetected(): Boolean {
-//        val t1 = measureTimeMillis {
-//            detectRootPermission()
-//        }
-//        val t2 = measureTimeMillis {
-//            detectFiles()
-//        }
-//        val t3 = measureTimeMillis {
-//            checkForRWPaths()
-//        }
-//
-//        Log.d(TAG, "Time: $t1 -- $t2  -- $t3 ")
+
         return detectRootPermission()||detectFiles()||checkForRWPaths()
     }
     companion object{
