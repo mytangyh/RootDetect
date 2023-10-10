@@ -3,7 +3,6 @@ package com.example.lib
 import android.util.Log
 import java.io.File
 import java.io.IOException
-import java.util.Scanner
 import kotlin.system.measureTimeMillis
 
 /**
@@ -72,7 +71,9 @@ class RootDetector : IDetection {
         results.addAll(etherFile.filter { fileExists(it) })
 
         // 将检测结果记录到全局结果列表中
-        detectedResults.add("File exists:${results.toList()}")
+        if (results.isNotEmpty()){
+            detectedResults.add("File exists:${results.toList()}")
+        }
 
         // 如果存在特定文件，返回true；否则返回false
         return results.isNotEmpty()
@@ -85,7 +86,7 @@ class RootDetector : IDetection {
      * @return 如果具有Root权限，返回true；否则返回false。
      */
     private fun detectRootPermission(): Boolean {
-        var isRoot = false
+        var isRoot: Boolean
 
         try {
             // 创建一个新的进程以执行"su"命令
@@ -103,6 +104,7 @@ class RootDetector : IDetection {
             // 如果退出值为0，表示具有Root权限
             isRoot = exitValue == 0
         } catch (e: Exception) {
+            Log.e(TAG, "detectRootPermission: $e", )
             return false
         }
         detectedResults.add("Root permission is $isRoot")
@@ -188,21 +190,49 @@ class RootDetector : IDetection {
         return buildTags != null && buildTags.contains("test-keys")
     }
 
+    private fun checkAttribute():Boolean{
+        val secureProp = getRoProperty("ro.secure")
+        val debugProp = getRoProperty("ro.debuggable")
+        detectedResults.add("Se:$secureProp de: $debugProp")
+        return false
+    }
+    private fun getRoProperty(propertyName: String): Int {
+        var propertyValue: String? = try {
+            val roSecureObj = Class.forName("android.os.SystemProperties")
+                .getMethod("get", String::class.java)
+                .invoke(null, propertyName) as String?
+            roSecureObj
+        } catch (e: Exception) {
+            null
+        }
+
+        return when (propertyValue) {
+            null -> 1
+            "0" -> 0
+            else -> 1
+        }
+    }
+
+
 
     override fun isDetected(): Boolean {
-        var t1 = measureTimeMillis {
+        val t1 = measureTimeMillis {
             detectRootPermission()
         }
-        var t2 = measureTimeMillis {
+        val t2 = measureTimeMillis {
             detectFiles()
         }
-        var t3 = measureTimeMillis {
+        val t3 = measureTimeMillis {
             checkForRWPaths()
         }
-        var t4 = measureTimeMillis {
+        val t4 = measureTimeMillis {
             checkDeviceDebuggable()
         }
-        Log.d(TAG, "Time: $t1 -- $t2  -- $t3 --  $t4")
+        val t5 = measureTimeMillis {
+            checkAttribute()
+        }
+
+        Log.d(TAG, "Time: $t1 -- $t2  -- $t3 --  $t4--$t5")
         return true
     }
     companion object{
