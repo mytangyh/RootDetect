@@ -4,6 +4,7 @@ import android.util.Log
 import java.io.File
 import java.io.IOException
 import java.util.Scanner
+import kotlin.system.measureTimeMillis
 
 /**
  * Author : Administrator
@@ -188,13 +189,24 @@ class RootDetector : IDetection {
     }
 
 
-
     override fun isDetected(): Boolean {
-        detectRootPermission()
-        detectFiles()
-        checkForRWPaths()
-        checkDeviceDebuggable()
+        var t1 = measureTimeMillis {
+            detectRootPermission()
+        }
+        var t2 = measureTimeMillis {
+            detectFiles()
+        }
+        var t3 = measureTimeMillis {
+            checkForRWPaths()
+        }
+        var t4 = measureTimeMillis {
+            checkDeviceDebuggable()
+        }
+        Log.d(TAG, "Time: $t1 -- $t2  -- $t3 --  $t4")
         return true
+    }
+    companion object{
+        var TAG = "TAG"
     }
 
     override fun getResults(): List<String> {
