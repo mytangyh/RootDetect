@@ -149,11 +149,11 @@ class RootDetector : IDetection {
             val propVal = inputStream.bufferedReader().use { it.readText() }
             val lines = propVal.split("\n")
             val sdkVersion = android.os.Build.VERSION.SDK_INT
-
+            val mountPointIndex = getMountPointIndex(sdkVersion)
+            val mountOptionsIndex = getMountOptionsIndex(sdkVersion)
             for (line in lines) {
                 val args = line.split(" ")
-                val mountPointIndex = getMountPointIndex(sdkVersion)
-                val mountOptionsIndex = getMountOptionsIndex(sdkVersion)
+
 
                 if (args.size < mountPointIndex + 1 || args.size < mountOptionsIndex + 1) {
                     continue
@@ -214,7 +214,7 @@ class RootDetector : IDetection {
 
 
     override fun isDetected(): Boolean {
-
+        checkForRWPaths()
         return detectRootPermission()||detectFiles()||checkForRWPaths()
     }
     companion object{
