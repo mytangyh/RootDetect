@@ -86,7 +86,7 @@ class RootDetector : IDetection {
      * @return 如果具有Root权限，返回true；否则返回false。
      */
     private fun detectRootPermission(): Boolean {
-        var isRoot: Boolean
+        val isRoot: Boolean
 
         try {
             // 创建一个新的进程以执行"su"命令
@@ -197,7 +197,7 @@ class RootDetector : IDetection {
         return false
     }
     private fun getRoProperty(propertyName: String): Int {
-        var propertyValue: String? = try {
+        val propertyValue: String? = try {
             val roSecureObj = Class.forName("android.os.SystemProperties")
                 .getMethod("get", String::class.java)
                 .invoke(null, propertyName) as String?
