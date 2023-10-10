@@ -189,7 +189,11 @@ class RootDetector : IDetection {
         detectedResults.add(buildTags)
         return buildTags != null && buildTags.contains("test-keys")
     }
-
+    /**
+     * 检查的secureProp和debugProp属性。
+     *
+     * @return
+     */
     private fun checkAttribute():Boolean{
         val secureProp = getRoProperty("ro.secure")
         val debugProp = getRoProperty("ro.debuggable")
@@ -214,26 +218,19 @@ class RootDetector : IDetection {
     }
 
 
-
     override fun isDetected(): Boolean {
-        val t1 = measureTimeMillis {
-            detectRootPermission()
-        }
-        val t2 = measureTimeMillis {
-            detectFiles()
-        }
-        val t3 = measureTimeMillis {
-            checkForRWPaths()
-        }
-        val t4 = measureTimeMillis {
-            checkDeviceDebuggable()
-        }
-        val t5 = measureTimeMillis {
-            checkAttribute()
-        }
-
-        Log.d(TAG, "Time: $t1 -- $t2  -- $t3 --  $t4--$t5")
-        return true
+//        val t1 = measureTimeMillis {
+//            detectRootPermission()
+//        }
+//        val t2 = measureTimeMillis {
+//            detectFiles()
+//        }
+//        val t3 = measureTimeMillis {
+//            checkForRWPaths()
+//        }
+//
+//        Log.d(TAG, "Time: $t1 -- $t2  -- $t3 ")
+        return detectRootPermission()||detectFiles()||checkForRWPaths()
     }
     companion object{
         var TAG = "TAG"
