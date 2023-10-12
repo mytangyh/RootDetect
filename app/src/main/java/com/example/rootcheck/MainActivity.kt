@@ -1,7 +1,9 @@
 package com.example.rootcheck
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.lib.Emulator
 import com.example.lib.RootDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
 
@@ -14,6 +16,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(mbinding.root)
         init()
     }
+    @SuppressLint("SetTextI18n")
     private fun init(){
 //        getExternalFilesDir(null)
 
@@ -23,7 +26,10 @@ class MainActivity : AppCompatActivity() {
 
             val isRooted = rootDetection.isDetected()
             val results = rootDetection.getResults()
-            mbinding.resultText.text = "Is Rooted: $isRooted\nresults: $results"
+            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
+            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
+
+
         }
     }
 }
