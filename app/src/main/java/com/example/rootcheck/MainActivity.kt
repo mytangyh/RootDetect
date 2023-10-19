@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
             mbinding.resultText.text = emulatorDetector.toString()
 
+
         }
     }
 }
