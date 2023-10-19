@@ -1,6 +1,8 @@
 package com.example.lib
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
@@ -25,14 +27,14 @@ class EmulatorDetector : IDetection {
     }
 
     // 运营商信息
-    fun getOperatorName(context: Context): String {
+    private fun getOperatorName(context: Context): String {
         val telephonyManager =
             context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         return telephonyManager.networkOperatorName
     }
 
     // 获取Build信息
-    fun getBuildInfo(): List<String> {
+    private fun getBuildInfo(): List<String> {
         return listOf(
             Build.MODEL,
             Build.BRAND,
@@ -81,23 +83,33 @@ class EmulatorDetector : IDetection {
         }
         return false
     }
+    private fun listThirdPartyApps(context: Context): List<ApplicationInfo> {
+        val packageManager = context.packageManager
+        val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+        val thirdPartyApps = mutableListOf<ApplicationInfo>()
 
-    private fun getUserAppNumber(): String {
-        val userApps = Runtime.getRuntime().exec("pm list package -3")
-        return userApps.toString()
+        for (app in apps) {
+            if (app.flags and ApplicationInfo.FLAG_SYSTEM == 0) {
+                // This app is not a system app (third-party app)
+                thirdPartyApps.add(app)
+            }
+        }
+
+        return thirdPartyApps
     }
+
     override fun isDetected(): Boolean {
         TODO("Not yet implemented")
     }
 
     fun getResults(context: Context): List<String>{
         return listOf(
-            getAllSensors(context).toString(),
-            getOperatorName(context),
-            getBuildInfo().toString(),
-            hasQEmuProps(),
-            checkForQEMU().toString(),
-            getUserAppNumber()
+            "getAllSensors:  "+getAllSensors(context).toString()+"\n",
+            "getOperatorName: "+getOperatorName(context)+"\n",
+            "getBuildInfo:"+getBuildInfo().toString()+"\n",
+            "hasQEmuProps:"+hasQEmuProps()+"\n",
+            "checkForQEMU:"+checkForQEMU().toString()+"\n",
+            "getUserAppNumber:"+listThirdPartyApps(context).toString()
         )
     }
     override fun getResults(): List<String> {
@@ -105,7 +117,6 @@ class EmulatorDetector : IDetection {
         return listOf(
             hasQEmuProps(),
             checkForQEMU().toString(),
-            getUserAppNumber()
         )
     }
 
