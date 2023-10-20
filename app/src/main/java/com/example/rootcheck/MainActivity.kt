@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.lib.Emulator
 import com.example.lib.EmulatorDetector
+import com.example.lib.Hook
 import com.example.lib.RootDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
 
@@ -30,7 +31,10 @@ class MainActivity : AppCompatActivity() {
             val emulatorDetector = EmulatorDetector().getResults(this)
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
-            mbinding.resultText.text = emulatorDetector.toString()
+            val hook = Hook()
+            val tr = hook.detectXposedModules(this, true)
+            val fa = hook.detectXposedModules(this, false)
+            mbinding.resultText.text = "tr:$tr,fa:$fa"
 
 
         }
