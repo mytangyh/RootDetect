@@ -12,6 +12,7 @@ import java.io.*
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 class EmulatorDetector : IDetection {
     private val detectedResults = mutableListOf<String>()
@@ -117,7 +118,7 @@ class EmulatorDetector : IDetection {
         ).contains(Build.PRODUCT)
         if (isGoogleProduct) result++
         detectedResults.add(
-            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS+"\n" + Build.FINGERPRINT+"\n" + Build.MODEL+"\n" + Build.MANUFACTURER+"\n" + Build.BRAND+"\n" + Build.HARDWARE+"\n" + Build.DEVICE
+            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS+"\n" + Build.FINGERPRINT+"\n" + Build.MODEL+"\n" + Build.MANUFACTURER+"\n" + Build.BRAND+"\n" + Build.HARDWARE+"\n" + Build.DEVICE+"\n"
         )
 
         return result
@@ -161,7 +162,7 @@ class EmulatorDetector : IDetection {
      * 待测试
      */
     private fun checkBaseBandValue(): Int {
-        val baseBandVersion = System.getProperty("gsm.version.baseband")
+        val baseBandVersion = Build.getRadioVersion()
         detectedResults.add("checkBaseBandValue:$baseBandVersion\n")
         return if (baseBandVersion.isNullOrEmpty()) {
             1
@@ -185,7 +186,7 @@ class EmulatorDetector : IDetection {
         val light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         if (light == null) result++
         val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        detectedResults.add("checkSensors:$sensorList\n")
+        detectedResults.add("checkSensors:${sensorList.size}\n")
         if (sensorList.size < 10) result++
         return result
     }
@@ -199,20 +200,8 @@ class EmulatorDetector : IDetection {
 
     private fun getOperatorName(context: Context): String {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        detectedResults.add("getOperatorName:$telephonyManager.networkOperatorName\n")
+        detectedResults.add("getOperatorName:${telephonyManager.networkOperatorName}\n")
         return telephonyManager.networkOperatorName
-    }
-    private fun hasEth0Interface(): String {
-        try {
-            val en = NetworkInterface.getNetworkInterfaces()
-            while (en.hasMoreElements()) {
-                val intf = en.nextElement()
-                detectedResults.add("hasEth0Interface:$intf\n")
-                if (intf.name == "eth0") return "1"
-            }
-        } catch (ex: SocketException) {
-        }
-        return "0"
     }
 
     private fun fileExists(filePath: String): Boolean {
@@ -221,7 +210,10 @@ class EmulatorDetector : IDetection {
 
     private fun isMark(filePaths: Array<String>): Int {
         for (s in filePaths) {
-            if (fileExists(s)) return 1
+            if (fileExists(s)) {
+                Log.d("filePaths", s)
+                return 1
+            }
         }
         return 0
     }
@@ -229,8 +221,13 @@ class EmulatorDetector : IDetection {
 
     override fun isDetected(context: Context): Boolean {
         getOperatorName(context)
-        hasEth0Interface()
-        return normalDetect(context)>3
+        var result: Int
+        val measureTimeMillis = measureTimeMillis {
+            result = normalDetect(context)
+        }
+        detectedResults.add("measureTimeMillis:$measureTimeMillis")
+        Log.d("result", result.toString())
+        return result>3
     }
 
 

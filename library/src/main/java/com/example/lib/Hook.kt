@@ -44,7 +44,9 @@ class Hook:IDetection {
         return "Result.NOT_FOUND"
     }
 
-    override fun isDetected(): Boolean {
+
+
+    override fun isDetected(context: Context): Boolean {
         TODO("Not yet implemented")
     }
 
