@@ -7,11 +7,14 @@ import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
 import android.telephony.TelephonyManager
+import android.util.Log
 import java.io.*
+import java.net.NetworkInterface
+import java.net.SocketException
 import java.util.*
 
 class EmulatorDetector : IDetection {
-
+    private val detectedResults = mutableListOf<String>()
     /**
      * 检测 ro.kernel.qemu 是否为1，内核 qemu
      *
@@ -19,6 +22,7 @@ class EmulatorDetector : IDetection {
      */
     private fun hasQEmuProps(): Int {
         val propertyValue = System.getProperty("ro.kernel.qemu")
+        detectedResults.add("propertyValue:$detectedResults\n")
         return if (propertyValue == "1") 1 else 0
     }
 
@@ -36,9 +40,9 @@ class EmulatorDetector : IDetection {
         var result = 0
 
         for (fileName in knownFiles) {
-            val file = File(fileName)
-            if (file.exists()) {
-                result = 1
+            if (fileExists(fileName)) {
+                result += 1
+                detectedResults.add("checkForQEMU:$fileName\n")
                 break
             }
         }
@@ -59,7 +63,8 @@ class EmulatorDetector : IDetection {
                 val driverData = String(data)
 
                 if (driverData.contains(knownQEMUDrivers)) {
-                    result = 1
+                    result += 1
+                    detectedResults.add("checkForQEMU:$driverData\n")
                     break
                 }
             }
@@ -73,48 +78,51 @@ class EmulatorDetector : IDetection {
         var result = 0
 
         // 检测CPU架构
-        val supportedABIs = Build.SUPPORTED_ABIS
-        val primaryABI = supportedABIs.firstOrNull() ?: ""
-        result += if (primaryABI.contains("x86")) 1 else 0
+        val primaryABI = Build.SUPPORTED_ABIS.firstOrNull() ?: ""
+        if (primaryABI.contains("x86")) result++
 
         // 检测唯一识别码FINGERPRINT
         val isGeneric = Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
-        result += if (isGeneric) 1 else 0
         val hasTestKeys =
             Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys") || Build.FINGERPRINT.toLowerCase(
                 Locale.getDefault()
             ).contains("dev-keys")
-        result += if (hasTestKeys) 1 else 0
+        if (isGeneric || hasTestKeys) result += 1
 
         // 检测MODEL
         val isEmulator =
             Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains("Android SDK built for x86") || Build.MODEL.contains(
                 "Android SDK built for x86_64"
             )
-        result += if (isEmulator) 1 else 0
+        if (isEmulator) result++
 
         // 检测厂商信息
         val isGenymotion = Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
-        result += if (isGenymotion) 1 else 0
+        if (isGenymotion) result++
 
         // 检测BRAND、HARDWARE、DEVICE信息
         val isGenericBrand = Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
-        result += if (isGenericBrand) 1 else 0
+        if (isGenericBrand) result++
         val isGoldfishHardware = Build.HARDWARE == "goldfish"
-        result += if (isGoldfishHardware) 1 else 0
+        if (isGoldfishHardware) result++
         val isVbox86pDevice =
             Build.DEVICE == "vbox86p" || Build.DEVICE.startsWith("generic") || Build.DEVICE.startsWith("generic_x86") || Build.DEVICE.startsWith(
                 "generic_x86_64"
             )
-        result += if (isVbox86pDevice) 1 else 0
+        if (isVbox86pDevice) result++
 
         // 检测PRODUCT信息
-        val isGoogleProduct =
-            Build.PRODUCT == "google_sdk" || Build.PRODUCT == "sdk" || Build.PRODUCT == "sdk_google" || Build.PRODUCT == "sdk_x86" || Build.PRODUCT == "vbox86p" || Build.PRODUCT == "sdk_google_phone_x86"
-        result += if (isGoogleProduct) 1 else 0
+        val isGoogleProduct = setOf(
+            "google_sdk", "sdk", "sdk_google", "sdk_x86", "vbox86p", "sdk_google_phone_x86"
+        ).contains(Build.PRODUCT)
+        if (isGoogleProduct) result++
+        detectedResults.add(
+            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS+"\n" + Build.FINGERPRINT+"\n" + Build.MODEL+"\n" + Build.MANUFACTURER+"\n" + Build.BRAND+"\n" + Build.HARDWARE+"\n" + Build.DEVICE
+        )
 
         return result
     }
+
 
     /**
      * 判断CPU是否为电脑来判断模拟器
@@ -123,7 +131,6 @@ class EmulatorDetector : IDetection {
      * @return 1 为模拟器，0 不是模拟器
      */
     private fun checkCpu(): Int {
-        var isEmulator = 0 // 默认为不是模拟器
         try {
             val process = Runtime.getRuntime().exec("cat /proc/cpuinfo")
             val reader = BufferedReader(InputStreamReader(process.inputStream, "utf-8"))
@@ -133,37 +140,37 @@ class EmulatorDetector : IDetection {
                 if (line?.toLowerCase(Locale.getDefault())
                         ?.contains("intel") == true || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true
                 ) {
-                    isEmulator = 1
-                    break // 只要检测到一次就可以退出循环
+                    reader.close()
+                    process.waitFor()
+                    detectedResults.add("checkCpu:$line\n")
+                    return 1
                 }
             }
             reader.close()
             process.waitFor()
-        } catch (ex: IOException) {
-            // 处理异常，可以根据需要添加日志或其他操作
-        } catch (ex: InterruptedException) {
-            // 处理异常，可以根据需要添加日志或其他操作
+        } catch (ex: Exception) {
+            Log.e("checkCpu", ex.toString())
         }
 
-        return isEmulator
+        return 0
     }
+
 
     /**
      * 特征参数-基带信息
      * 待测试
      */
-    fun checkBaseBandValue(): Int {
+    private fun checkBaseBandValue(): Int {
         val baseBandVersion = System.getProperty("gsm.version.baseband")
-
-        if (baseBandVersion.isNullOrEmpty()) {
-            return 1
+        detectedResults.add("checkBaseBandValue:$baseBandVersion\n")
+        return if (baseBandVersion.isNullOrEmpty()) {
+            1
         } else if (baseBandVersion.contains("1.0.0.0")) {
-            return 1
+            1
         } else {
-            return 0
+            0
         }
     }
-
 
 
     /**
@@ -172,39 +179,215 @@ class EmulatorDetector : IDetection {
      * @param context
      * @return
      */
-    private fun getAllSensors(context: Context): List<String> {
+    private fun checkSensors(context: Context): Int {
+        var result = 0
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        if (light == null) result++
         val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        val sensorNames = mutableListOf<String>()
-        for (sensor in sensorList) {
-            sensorNames.add(sensor.name)
-        }
-        return sensorNames
+        detectedResults.add("checkSensors:$sensorList\n")
+        if (sensorList.size < 10) result++
+        return result
     }
 
+    private fun normalDetect(context: Context): Int {
+        var result = 0
+        result += hasQEmuProps() + checkForQEMU() + checkBuildInfo() + checkCpu() + checkBaseBandValue() + checkSensors(
+            context) + isMark(vBoxFile)
+        return result
+    }
 
     private fun getOperatorName(context: Context): String {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        detectedResults.add("getOperatorName:$telephonyManager.networkOperatorName\n")
         return telephonyManager.networkOperatorName
     }
-
-    override fun isDetected(): Boolean {
-        TODO("Not yet implemented")
+    private fun hasEth0Interface(): String {
+        try {
+            val en = NetworkInterface.getNetworkInterfaces()
+            while (en.hasMoreElements()) {
+                val intf = en.nextElement()
+                detectedResults.add("hasEth0Interface:$intf\n")
+                if (intf.name == "eth0") return "1"
+            }
+        } catch (ex: SocketException) {
+        }
+        return "0"
     }
 
-    fun getResults(context: Context): List<String> {
-        return listOf(
-            "getAllSensors:  " + getAllSensors(context).toString() + "\n",
-            "hasQEmuProps:" + hasQEmuProps() + "\n",
-            "checkForQEMU:" + checkForQEMU().toString() + "\n",
-        )
+    private fun fileExists(filePath: String): Boolean {
+        return File(filePath).exists()
     }
+
+    private fun isMark(filePaths: Array<String>): Int {
+        for (s in filePaths) {
+            if (fileExists(s)) return 1
+        }
+        return 0
+    }
+
+
+    override fun isDetected(context: Context): Boolean {
+        getOperatorName(context)
+        hasEth0Interface()
+        return normalDetect(context)>3
+    }
+
 
     override fun getResults(): List<String> {
-
-        return listOf(
-        )
+        return detectedResults
     }
-
+    private val vBoxFile = arrayOf(
+        "/data/youwave_id",
+        "/dev/vboxguest",
+        "/dev/vboxuser",
+        "/mnt/prebundledapps/bluestacks.prop.orig",
+        "/mnt/prebundledapps/propfiles/ics.bluestacks.prop.note",
+        "/mnt/prebundledapps/propfiles/ics.bluestacks.prop.s2",
+        "/mnt/prebundledapps/propfiles/ics.bluestacks.prop.s3",
+        "/proc/irq/9/vboxguest",
+        "/sys/bus/pci/drivers/vboxguest",
+        "/sys/bus/pci/drivers/vboxguest/0000:00:04.0",
+        "/sys/bus/pci/drivers/vboxguest/bind",
+        "/sys/bus/pci/drivers/vboxguest/module",
+        "/sys/bus/pci/drivers/vboxguest/new_id",
+        "/sys/bus/pci/drivers/vboxguest/remove_id",
+        "/sys/bus/pci/drivers/vboxguest/uevent",
+        "/sys/bus/pci/drivers/vboxguest/unbind",
+        "/sys/bus/platform/drivers/qemu_pipe",
+        "/sys/bus/platform/drivers/qemu_trace",
+        "/sys/class/bdi/vboxsf-c",
+        "/sys/class/misc/vboxguest",
+        "/sys/class/misc/vboxuser",
+        "/sys/devices/virtual/bdi/vboxsf-c",
+        "/sys/devices/virtual/misc/vboxguest",
+        "/sys/devices/virtual/misc/vboxguest/dev",
+        "/sys/devices/virtual/misc/vboxguest/power",
+        "/sys/devices/virtual/misc/vboxguest/subsystem",
+        "/sys/devices/virtual/misc/vboxguest/uevent",
+        "/sys/devices/virtual/misc/vboxuser",
+        "/sys/devices/virtual/misc/vboxuser/dev",
+        "/sys/devices/virtual/misc/vboxuser/power",
+        "/sys/devices/virtual/misc/vboxuser/subsystem",
+        "/sys/devices/virtual/misc/vboxuser/uevent",
+        "/sys/module/vboxguest",
+        "/sys/module/vboxguest/coresize",
+        "/sys/module/vboxguest/drivers",
+        "/sys/module/vboxguest/drivers/pci:vboxguest",
+        "/sys/module/vboxguest/holders",
+        "/sys/module/vboxguest/holders/vboxsf",
+        "/sys/module/vboxguest/initsize",
+        "/sys/module/vboxguest/initstate",
+        "/sys/module/vboxguest/notes",
+        "/sys/module/vboxguest/notes/.note.gnu.build-id",
+        "/sys/module/vboxguest/parameters",
+        "/sys/module/vboxguest/parameters/log",
+        "/sys/module/vboxguest/parameters/log_dest",
+        "/sys/module/vboxguest/parameters/log_flags",
+        "/sys/module/vboxguest/refcnt",
+        "/sys/module/vboxguest/sections",
+        "/sys/module/vboxguest/sections/.altinstructions",
+        "/sys/module/vboxguest/sections/.altinstr_replacement",
+        "/sys/module/vboxguest/sections/.bss",
+        "/sys/module/vboxguest/sections/.data",
+        "/sys/module/vboxguest/sections/.devinit.data",
+        "/sys/module/vboxguest/sections/.exit.text",
+        "/sys/module/vboxguest/sections/.fixup",
+        "/sys/module/vboxguest/sections/.gnu.linkonce.this_module",
+        "/sys/module/vboxguest/sections/.init.text",
+        "/sys/module/vboxguest/sections/.note.gnu.build-id",
+        "/sys/module/vboxguest/sections/.rodata",
+        "/sys/module/vboxguest/sections/.rodata.str1.1",
+        "/sys/module/vboxguest/sections/.smp_locks",
+        "/sys/module/vboxguest/sections/.strtab",
+        "/sys/module/vboxguest/sections/.symtab",
+        "/sys/module/vboxguest/sections/.text",
+        "/sys/module/vboxguest/sections/__ex_table",
+        "/sys/module/vboxguest/sections/__ksymtab",
+        "/sys/module/vboxguest/sections/__ksymtab_strings",
+        "/sys/module/vboxguest/sections/__param",
+        "/sys/module/vboxguest/srcversion",
+        "/sys/module/vboxguest/taint",
+        "/sys/module/vboxguest/uevent",
+        "/sys/module/vboxguest/version",
+        "/sys/module/vboxsf",
+        "/sys/module/vboxsf/coresize",
+        "/sys/module/vboxsf/holders",
+        "/sys/module/vboxsf/initsize",
+        "/sys/module/vboxsf/initstate",
+        "/sys/module/vboxsf/notes",
+        "/sys/module/vboxsf/notes/.note.gnu.build-id",
+        "/sys/module/vboxsf/refcnt",
+        "/sys/module/vboxsf/sections",
+        "/sys/module/vboxsf/sections/.bss",
+        "/sys/module/vboxsf/sections/.data",
+        "/sys/module/vboxsf/sections/.exit.text",
+        "/sys/module/vboxsf/sections/.gnu.linkonce.this_module",
+        "/sys/module/vboxsf/sections/.init.text",
+        "/sys/module/vboxsf/sections/.note.gnu.build-id",
+        "/sys/module/vboxsf/sections/.rodata",
+        "/sys/module/vboxsf/sections/.rodata.str1.1",
+        "/sys/module/vboxsf/sections/.smp_locks",
+        "/sys/module/vboxsf/sections/.strtab",
+        "/sys/module/vboxsf/sections/.symtab",
+        "/sys/module/vboxsf/sections/.text",
+        "/sys/module/vboxsf/sections/__bug_table",
+        "/sys/module/vboxsf/sections/__param",
+        "/sys/module/vboxsf/srcversion",
+        "/sys/module/vboxsf/taint",
+        "/sys/module/vboxsf/uevent",
+        "/sys/module/vboxsf/version",
+        "/sys/module/vboxvideo",
+        "/sys/module/vboxvideo/coresize",
+        "/sys/module/vboxvideo/holders",
+        "/sys/module/vboxvideo/initsize",
+        "/sys/module/vboxvideo/initstate",
+        "/sys/module/vboxvideo/notes",
+        "/sys/module/vboxvideo/notes/.note.gnu.build-id",
+        "/sys/module/vboxvideo/refcnt",
+        "/sys/module/vboxvideo/sections",
+        "/sys/module/vboxvideo/sections/.data",
+        "/sys/module/vboxvideo/sections/.exit.text",
+        "/sys/module/vboxvideo/sections/.gnu.linkonce.this_module",
+        "/sys/module/vboxvideo/sections/.init.text",
+        "/sys/module/vboxvideo/sections/.note.gnu.build-id",
+        "/sys/module/vboxvideo/sections/.rodata.str1.1",
+        "/sys/module/vboxvideo/sections/.strtab",
+        "/sys/module/vboxvideo/sections/.symtab",
+        "/sys/module/vboxvideo/sections/.text",
+        "/sys/module/vboxvideo/srcversion",
+        "/sys/module/vboxvideo/taint",
+        "/sys/module/vboxvideo/uevent",
+        "/sys/module/vboxvideo/version",
+        "/system/app/bluestacksHome.apk",
+        "/system/bin/androVM-prop",
+        "/system/bin/androVM-vbox-sf",
+        "/system/bin/androVM_setprop",
+        "/system/bin/get_androVM_host",
+        "/system/bin/mount.vboxsf",
+        "/system/etc/init.androVM.sh",
+        "/system/etc/init.buildroid.sh",
+        "/system/lib/hw/audio.primary.vbox86.so",
+        "/system/lib/hw/camera.vbox86.so",
+        "/system/lib/hw/gps.vbox86.so",
+        "/system/lib/hw/gralloc.vbox86.so",
+        "/system/lib/hw/sensors.vbox86.so",
+        "/system/lib/modules/3.0.8-android-x86+/extra/vboxguest",
+        "/system/lib/modules/3.0.8-android-x86+/extra/vboxguest/vboxguest.ko",
+        "/system/lib/modules/3.0.8-android-x86+/extra/vboxsf",
+        "/system/lib/modules/3.0.8-android-x86+/extra/vboxsf/vboxsf.ko",
+        "/system/lib/vboxguest.ko",
+        "/system/lib/vboxsf.ko",
+        "/system/lib/vboxvideo.ko",
+        "/system/usr/idc/androVM_Virtual_Input.idc",
+        "/system/usr/keylayout/androVM_Virtual_Input.kl",
+        "/system/xbin/mount.vboxsf",
+        "/ueventd.android_x86.rc",
+        "/ueventd.vbox86.rc",
+        "/ueventd.goldfish.rc",
+        "/fstab.vbox86",
+        "/init.vbox86.rc",
+        "/init.goldfish.rc"
+    )
 }
 

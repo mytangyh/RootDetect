@@ -1,5 +1,6 @@
 package com.example.lib
 
+import android.content.Context
 import android.util.Log
 import java.io.File
 import java.io.IOException
@@ -213,7 +214,7 @@ class RootDetector : IDetection {
     }
 
 
-    override fun isDetected(): Boolean {
+    override fun isDetected(context: Context): Boolean {
         checkForRWPaths()
         return detectRootPermission()||detectFiles()||checkForRWPaths()
     }
