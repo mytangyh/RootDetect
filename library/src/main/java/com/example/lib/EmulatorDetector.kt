@@ -1,21 +1,21 @@
 package com.example.lib
 
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
 import android.telephony.TelephonyManager
 import android.util.Log
-import java.io.*
-import java.net.NetworkInterface
-import java.net.SocketException
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStreamReader
 import java.util.*
 import kotlin.system.measureTimeMillis
 
 class EmulatorDetector : IDetection {
     private val detectedResults = mutableListOf<String>()
+
     /**
      * 检测 ro.kernel.qemu 是否为1，内核 qemu
      *
@@ -118,7 +118,7 @@ class EmulatorDetector : IDetection {
         ).contains(Build.PRODUCT)
         if (isGoogleProduct) result++
         detectedResults.add(
-            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS+"\n" + Build.FINGERPRINT+"\n" + Build.MODEL+"\n" + Build.MANUFACTURER+"\n" + Build.BRAND+"\n" + Build.HARDWARE+"\n" + Build.DEVICE+"\n"
+            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS + "\n" + Build.FINGERPRINT + "\n" + Build.MODEL + "\n" + Build.MANUFACTURER + "\n" + Build.BRAND + "\n" + Build.HARDWARE + "\n" + Build.DEVICE + "\n"
         )
 
         return result
@@ -194,7 +194,8 @@ class EmulatorDetector : IDetection {
     private fun normalDetect(context: Context): Int {
         var result = 0
         result += hasQEmuProps() + checkForQEMU() + checkBuildInfo() + checkCpu() + checkBaseBandValue() + checkSensors(
-            context) + isMark(vBoxFile)
+            context
+        ) + isMark(vBoxFile)
         return result
     }
 
@@ -227,13 +228,14 @@ class EmulatorDetector : IDetection {
         }
         detectedResults.add("measureTimeMillis:$measureTimeMillis")
         Log.d("result", result.toString())
-        return result>3
+        return result > 3
     }
 
 
     override fun getResults(): List<String> {
         return detectedResults
     }
+
     private val vBoxFile = arrayOf(
         "/data/youwave_id",
         "/dev/vboxguest",
