@@ -1,13 +1,14 @@
 package com.example.rootcheck
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.lib.Emulator
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.lib.EmulatorDetector
-import com.example.lib.Hook
-import com.example.lib.RootDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
+import com.google.android.material.tabs.TabLayoutMediator
 
 
 class MainActivity : AppCompatActivity() {
@@ -16,6 +17,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         mbinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mbinding.root)
+
+        mbinding.viewPager.adapter=MyPagerAdapter(this)
+        TabLayoutMediator(mbinding.tabLayout, mbinding.viewPager) { tab, position ->
+            when (position) {
+                0 -> tab.text = "Tab 1"
+                1 -> tab.text = "Tab 2"
+            }
+        }.attach()
         init()
     }
     @SuppressLint("SetTextI18n")
@@ -41,4 +50,19 @@ class MainActivity : AppCompatActivity() {
 
         }
     }
+    class MyPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
+        override fun getItemCount(): Int {
+            return 2 // 两个标签页
+        }
+
+        override fun createFragment(position: Int): Fragment {
+            return when (position) {
+                0 -> DetailFragment()
+                1 -> AbstractFragment()
+                else -> throw IllegalArgumentException("Invalid position")
+            }
+        }
+    }
+
+
 }

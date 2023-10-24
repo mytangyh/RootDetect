@@ -666,17 +666,7 @@ class Emulator {
         return result
     }
 
-    private fun hasEth0Interface(): String {
-        try {
-            val en = NetworkInterface.getNetworkInterfaces()
-            while (en.hasMoreElements()) {
-                val intf = en.nextElement()
-                if (intf.name == "eth0") return "1"
-            }
-        } catch (ex: SocketException) {
-        }
-        return "0"
-    }
+
 
     private fun vBox(): String {
         return isMark(vBoxFile)
