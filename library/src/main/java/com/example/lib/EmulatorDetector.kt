@@ -11,12 +11,17 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
-import java.util.*
+import java.util.Locale
 import kotlin.system.measureTimeMillis
 
 class EmulatorDetector : IDetection {
     private val detectedResults = mutableListOf<String>()
 
+    /**
+     * 检测网易MuMu模拟器
+     * 模拟器版本 12
+     * 安卓版本 12
+     */
     private val mmAppName = arrayOf(
         "/data/data/com.mumu.launcher",
         "/data/data/com.mumu.store",
@@ -36,8 +41,65 @@ class EmulatorDetector : IDetection {
         return appPackageCount + markCount + isMuMuModel
     }
 
+    /**
+     * 检测夜神模拟器
+     * 模拟器版本 7.0.59
+     * 安卓版本 7.1.2
+     */
+    private val ysAppName = arrayOf(
+        "/storage/emulated/legacy/BigNoxHD",
+        "/lib/libnoxd.so",
+        "/lib/libnoxspeedup.so",
+        "/data/property/persist.nox.androidid",
+        "system/app/Helper/NoxHelp_zh.apk",
+        "/data/dalvik-cache/profiles/com.bignox.app.store.hd"
+    )
+    private val ysAppPackage = arrayOf("com.bignox.google.installer", "com.bignox.app.store.hd")
 
+    private fun isNox(context: Context): Int {
+        val appPackageCount = hasAppPackage(context, ysAppPackage)
+        detectedResults.add("appPackageCount:$appPackageCount\n")
+        val markCount = isMark(ysAppName)
+        detectedResults.add("markCount:$markCount\n")
+        return appPackageCount + markCount
+    }
 
+    /**
+     * 检测BlueStacks模拟器
+     * 模拟器版本 5.1.3
+     * 安卓版本 7.1.1
+     * 无法检测目录文件 /Android/data/com.bluestacks.home
+     */
+
+    /**
+     * 检测逍遥模拟器
+     * 模拟器版本 9.0.7
+     * 安卓版本 9
+     */
+
+    private val xyAppName = arrayOf(
+        "/data/data/com.microvirt.launcher",
+        "/data/data/com.microvirt.download",
+        "/data/data/com.microvirt.guide",
+        "/data/data/com.microvirt.installer",
+        "/data/data/com.microvirt.market",
+        "/data/data/com.microvirt.memuime"
+    )
+    private val xyAppPackage = arrayOf(
+        "com.microvirt.launcher",
+        "com.microvirt.download",
+        "com.microvirt.guide",
+        "com.microvirt.installer",
+        "com.microvirt.market",
+        "com.microvirt.memuime"
+    )
+    private fun isXiaoYao(context: Context): Int {
+        val appPackageCount = hasAppPackage(context, xyAppPackage)
+        detectedResults.add("appPackageCount:$appPackageCount\n")
+        val markCount = isMark(xyAppName)
+        detectedResults.add("markCount:$markCount\n")
+        return appPackageCount + markCount
+    }
 
     /**
      * 检测 ro.kernel.qemu 是否为1，内核 qemu
@@ -57,7 +119,13 @@ class EmulatorDetector : IDetection {
      */
     private fun checkForQEMU(): Int {
         val knownFiles = arrayOf(
-            "/system/lib/libc_malloc_debug_qemu.so", "/sys/qemu_trace", "/system/bin/qemu.props", "/system/bin/qemud"
+            "/system/lib/libc_malloc_debug_qemu.so",
+            "/sys/qemu_trace",
+            "/system/bin/qemu.props",
+            "/system/bin/qemud",
+            "/dev/socket/qemud",
+            "/dev/qemu_pipe",
+            "/dev/qemu_trace"
         )
 
 
@@ -102,35 +170,43 @@ class EmulatorDetector : IDetection {
         var result = 0
 
         // 检测CPU架构
-        val primaryABI = Build.SUPPORTED_ABIS.firstOrNull() ?: ""
+        val primaryABI = Build.SUPPORTED_ABIS.joinToString(",")
         if (primaryABI.contains("x86")) result++
 
         // 检测唯一识别码FINGERPRINT
-        val isGeneric = Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
+        val isGeneric =
+            Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
         val hasTestKeys =
-            Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys") || Build.FINGERPRINT.toLowerCase(
+            Build.FINGERPRINT.toLowerCase(Locale.getDefault())
+                .contains("test-keys") || Build.FINGERPRINT.toLowerCase(
                 Locale.getDefault()
             ).contains("dev-keys")
         if (isGeneric || hasTestKeys) result += 1
 
         // 检测MODEL
         val isEmulator =
-            Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains("Android SDK built for x86") || Build.MODEL.contains(
+            Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains(
+                "Android SDK built for x86"
+            ) || Build.MODEL.contains(
                 "Android SDK built for x86_64"
             )
         if (isEmulator) result++
 
         // 检测厂商信息
-        val isGenymotion = Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
+        val isGenymotion =
+            Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
         if (isGenymotion) result++
 
         // 检测BRAND、HARDWARE、DEVICE信息
-        val isGenericBrand = Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
+        val isGenericBrand =
+            Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
         if (isGenericBrand) result++
         val isGoldfishHardware = Build.HARDWARE == "goldfish"
         if (isGoldfishHardware) result++
         val isVbox86pDevice =
-            Build.DEVICE == "vbox86p" || Build.DEVICE.startsWith("generic") || Build.DEVICE.startsWith("generic_x86") || Build.DEVICE.startsWith(
+            Build.DEVICE == "vbox86p" || Build.DEVICE.startsWith("generic") || Build.DEVICE.startsWith(
+                "generic_x86"
+            ) || Build.DEVICE.startsWith(
                 "generic_x86_64"
             )
         if (isVbox86pDevice) result++
@@ -141,7 +217,7 @@ class EmulatorDetector : IDetection {
         ).contains(Build.PRODUCT)
         if (isGoogleProduct) result++
         detectedResults.add(
-            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS + "\n" + Build.FINGERPRINT + "\n" + Build.MODEL + "\n" + Build.MANUFACTURER + "\n" + Build.BRAND + "\n" + Build.HARDWARE + "\n" + Build.DEVICE + "\n"
+            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS.joinToString(",") + "\n" + Build.FINGERPRINT + "\n" + Build.MODEL + "\n" + Build.MANUFACTURER + "\n" + Build.BRAND + "\n" + Build.HARDWARE + "\n" + Build.DEVICE + "\n"
         )
 
         return result
@@ -162,7 +238,8 @@ class EmulatorDetector : IDetection {
 
             while (reader.readLine().also { line = it } != null) {
                 if (line?.toLowerCase(Locale.getDefault())
-                        ?.contains("intel") == true || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true
+                        ?.contains("intel") == true || line?.toLowerCase(Locale.getDefault())
+                        ?.contains("amd") == true
                 ) {
                     reader.close()
                     process.waitFor()
@@ -212,6 +289,7 @@ class EmulatorDetector : IDetection {
             result++
         }
         val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        sensorList.forEach { Log.d("sensorList", it.name) }
         detectedResults.add("checkSensors:${sensorList.size}\n")
         if (sensorList.size < 10) result++
         return result
@@ -226,7 +304,8 @@ class EmulatorDetector : IDetection {
     }
 
     private fun getOperatorName(context: Context): String {
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val telephonyManager =
+            context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         detectedResults.add("networkOperatorName:${telephonyManager.networkOperatorName}\n")
         return telephonyManager.networkOperatorName
     }
@@ -239,11 +318,13 @@ class EmulatorDetector : IDetection {
         for (s in filePaths) {
             if (fileExists(s)) {
                 Log.d("filePaths", s)
+                detectedResults.add("isMark:$s\n")
                 return 1
             }
         }
         return 0
     }
+
     private fun hasAppPackage(context: Context, app: Array<String>): Int {
         val packageManager = context.packageManager
         val flag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -260,14 +341,14 @@ class EmulatorDetector : IDetection {
     }
 
 
-
     override fun isDetected(context: Context): Boolean {
         getOperatorName(context)
-        var result=0
-        val measureTimeMillis = measureTimeMillis {
-            result += normalDetect(context)+isMuMu(context)
+        var result = 0
+        var timeMillis = measureTimeMillis {
+            result = normalDetect(context) + isXiaoYao(context)
+
         }
-        detectedResults.add("measureTimeMillis:$measureTimeMillis\n result $result\n")
+        detectedResults.add("timeMillis:$timeMillis \n result: $result\n")
         Log.d("result", result.toString())
         return result > 0
     }
