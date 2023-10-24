@@ -1,6 +1,7 @@
 package com.example.lib
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
@@ -15,6 +16,28 @@ import kotlin.system.measureTimeMillis
 
 class EmulatorDetector : IDetection {
     private val detectedResults = mutableListOf<String>()
+
+    private val mmAppName = arrayOf(
+        "/data/data/com.mumu.launcher",
+        "/data/data/com.mumu.store",
+        "/data/data/com.netease.mumu.cloner",
+        "/data/dalvik-cache/profiles/com.mumu.launcher",
+        "/data/dalvik-cache/profiles/com.mumu.store"
+    )
+    private val mmAppPackage = arrayOf("com.mumu.store", "com.mumu.launcher", "com.mumu.audio")
+
+    private fun isMuMu(context: Context): Int {
+        val appPackageCount = hasAppPackage(context, mmAppPackage)
+        detectedResults.add("appPackageCount:$appPackageCount\n")
+        val markCount = isMark(mmAppName)
+        detectedResults.add("markCount:$markCount\n")
+        val model = Build.MODEL
+        val isMuMuModel = if (model == "MuMu") 1 else 0
+        return appPackageCount + markCount + isMuMuModel
+    }
+
+
+
 
     /**
      * 检测 ro.kernel.qemu 是否为1，内核 qemu
@@ -221,13 +244,28 @@ class EmulatorDetector : IDetection {
         }
         return 0
     }
+    private fun hasAppPackage(context: Context, app: Array<String>): Int {
+        val packageManager = context.packageManager
+        val flag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            PackageManager.MATCH_UNINSTALLED_PACKAGES
+        } else {
+            PackageManager.GET_UNINSTALLED_PACKAGES
+        }
+
+        val installedPackages = packageManager.getInstalledPackages(flag)
+        val count = installedPackages.count { installedPackage ->
+            app.any { it == installedPackage.packageName }
+        }
+        return count
+    }
+
 
 
     override fun isDetected(context: Context): Boolean {
         getOperatorName(context)
-        var result: Int
+        var result=0
         val measureTimeMillis = measureTimeMillis {
-            result = normalDetect(context)
+            result += normalDetect(context)+isMuMu(context)
         }
         detectedResults.add("measureTimeMillis:$measureTimeMillis\n result $result\n")
         Log.d("result", result.toString())
