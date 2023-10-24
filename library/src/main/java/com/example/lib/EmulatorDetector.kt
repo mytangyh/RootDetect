@@ -100,6 +100,40 @@ class EmulatorDetector : IDetection {
         detectedResults.add("markCount:$markCount\n")
         return appPackageCount + markCount
     }
+    /**
+     * 检测雷电模拟器
+     * 模拟器版本 9.0.61
+     * 安卓版本 9
+     * 无法检测
+     */
+
+    /**
+     * 检测Genymotion模拟器
+     * 模拟器版本 3.0.1
+     * 安卓版本5.0、9.0
+     *
+     *
+
+     */
+    private val geAppName = arrayOf(
+        "/data/data/com.google.android.launcher.layouts.genymotion",
+        "/system/app/GenymotionLayout/GenymotionLayout.apk",
+        "/dev/socket/baseband_genyd",
+        "system/bin/genymotion-vbox-sf"
+    )
+    private val geAppPackage = arrayOf(
+        "com.genymotion.superuser", "com.genymotion.genyd", "com.genymotion.systempatcher"
+    )
+    private fun isGenymotion(context: Context): Int {
+        val appPackageCount = hasAppPackage(context, geAppPackage)
+        detectedResults.add("appPackageCount:$appPackageCount\n")
+        val markCount = isMark(geAppName)
+        detectedResults.add("markCount:$markCount\n")
+        var systemApp = CommonUtils.isSystemApp(context, geAppPackage)
+        detectedResults.add("systemApp:$systemApp\n")
+
+        return appPackageCount + markCount
+    }
 
     /**
      * 检测 ro.kernel.qemu 是否为1，内核 qemu
@@ -345,7 +379,7 @@ class EmulatorDetector : IDetection {
         getOperatorName(context)
         var result = 0
         var timeMillis = measureTimeMillis {
-            result = normalDetect(context) + isXiaoYao(context)
+            result = normalDetect(context)+isGenymotion(context)
 
         }
         detectedResults.add("timeMillis:$timeMillis \n result: $result\n")
