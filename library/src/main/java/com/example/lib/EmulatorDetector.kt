@@ -23,7 +23,7 @@ class EmulatorDetector : IDetection {
      */
     private fun hasQEmuProps(): Int {
         val propertyValue = System.getProperty("ro.kernel.qemu")
-        detectedResults.add("propertyValue:$detectedResults\n")
+        detectedResults.add("hasQEmuProps:$propertyValue\n")
         return if (propertyValue == "1") 1 else 0
     }
 
@@ -184,7 +184,10 @@ class EmulatorDetector : IDetection {
         var result = 0
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         val light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
-        if (light == null) result++
+        if (light == null) {
+            detectedResults.add("checkLightSensors:light\n")
+            result++
+        }
         val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
         detectedResults.add("checkSensors:${sensorList.size}\n")
         if (sensorList.size < 10) result++
@@ -201,7 +204,7 @@ class EmulatorDetector : IDetection {
 
     private fun getOperatorName(context: Context): String {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        detectedResults.add("getOperatorName:${telephonyManager.networkOperatorName}\n")
+        detectedResults.add("networkOperatorName:${telephonyManager.networkOperatorName}\n")
         return telephonyManager.networkOperatorName
     }
 
@@ -226,9 +229,9 @@ class EmulatorDetector : IDetection {
         val measureTimeMillis = measureTimeMillis {
             result = normalDetect(context)
         }
-        detectedResults.add("measureTimeMillis:$measureTimeMillis")
+        detectedResults.add("measureTimeMillis:$measureTimeMillis\n result $result\n")
         Log.d("result", result.toString())
-        return result > 3
+        return result > 0
     }
 
 
