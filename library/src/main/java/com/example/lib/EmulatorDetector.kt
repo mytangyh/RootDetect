@@ -5,13 +5,12 @@ import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.Build
-import android.telephony.TelephonyManager
 import android.util.Log
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
-import java.util.Locale
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 class EmulatorDetector : IDetection {
@@ -64,12 +63,6 @@ class EmulatorDetector : IDetection {
         return appPackageCount + markCount
     }
 
-    /**
-     * 检测BlueStacks模拟器
-     * 模拟器版本 5.1.3
-     * 安卓版本 7.1.1
-     * 无法检测目录文件 /Android/data/com.bluestacks.home
-     */
 
     /**
      * 检测逍遥模拟器
@@ -93,6 +86,7 @@ class EmulatorDetector : IDetection {
         "com.microvirt.market",
         "com.microvirt.memuime"
     )
+
     private fun isXiaoYao(context: Context): Int {
         val appPackageCount = hasAppPackage(context, xyAppPackage)
         detectedResults.add("appPackageCount:$appPackageCount\n")
@@ -100,12 +94,7 @@ class EmulatorDetector : IDetection {
         detectedResults.add("markCount:$markCount\n")
         return appPackageCount + markCount
     }
-    /**
-     * 检测雷电模拟器
-     * 模拟器版本 9.0.61
-     * 安卓版本 9
-     * 无法检测
-     */
+
 
     /**
      * 检测Genymotion模拟器
@@ -113,7 +102,6 @@ class EmulatorDetector : IDetection {
      * 安卓版本5.0、9.0
      *
      *
-
      */
     private val geAppName = arrayOf(
         "/data/data/com.google.android.launcher.layouts.genymotion",
@@ -124,15 +112,30 @@ class EmulatorDetector : IDetection {
     private val geAppPackage = arrayOf(
         "com.genymotion.superuser", "com.genymotion.genyd", "com.genymotion.systempatcher"
     )
+
     private fun isGenymotion(context: Context): Int {
         val appPackageCount = hasAppPackage(context, geAppPackage)
         detectedResults.add("appPackageCount:$appPackageCount\n")
         val markCount = isMark(geAppName)
         detectedResults.add("markCount:$markCount\n")
-        var systemApp = CommonUtils.isSystemApp(context, geAppPackage)
-        detectedResults.add("systemApp:$systemApp\n")
+//        var systemApp = CommonUtils.isSystemApp(context, geAppPackage)
+//        detectedResults.add("systemApp:$systemApp\n")
 
         return appPackageCount + markCount
+    }
+
+    /**
+     * 检测原生模拟器（AS自带的）
+     * 针对QEMU, KVM, QEMU-KVM 和 Goldfish的理解
+     * https://blog.csdn.net/span76/article/details/19165345
+     */
+
+    private val asAppName = arrayOf("/sys/module/goldfish_audio", "/sys/module/goldfish_sync")
+
+    private fun isAS(): Int {
+        var value = isMark(asAppName)
+        value += if (Build.HARDWARE == "ranchu") 1 else 0
+        return value
     }
 
     /**
@@ -208,32 +211,27 @@ class EmulatorDetector : IDetection {
         if (primaryABI.contains("x86")) result++
 
         // 检测唯一识别码FINGERPRINT
-        val isGeneric =
-            Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
+        val isGeneric = Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
         val hasTestKeys =
-            Build.FINGERPRINT.toLowerCase(Locale.getDefault())
-                .contains("test-keys") || Build.FINGERPRINT.toLowerCase(
+            Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys") || Build.FINGERPRINT.toLowerCase(
                 Locale.getDefault()
             ).contains("dev-keys")
         if (isGeneric || hasTestKeys) result += 1
 
         // 检测MODEL
-        val isEmulator =
-            Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains(
-                "Android SDK built for x86"
-            ) || Build.MODEL.contains(
-                "Android SDK built for x86_64"
-            )
+        val isEmulator = Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains(
+            "Android SDK built for x86"
+        ) || Build.MODEL.contains(
+            "Android SDK built for x86_64"
+        )
         if (isEmulator) result++
 
         // 检测厂商信息
-        val isGenymotion =
-            Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
+        val isGenymotion = Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
         if (isGenymotion) result++
 
         // 检测BRAND、HARDWARE、DEVICE信息
-        val isGenericBrand =
-            Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
+        val isGenericBrand = Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
         if (isGenericBrand) result++
         val isGoldfishHardware = Build.HARDWARE == "goldfish"
         if (isGoldfishHardware) result++
@@ -272,8 +270,7 @@ class EmulatorDetector : IDetection {
 
             while (reader.readLine().also { line = it } != null) {
                 if (line?.toLowerCase(Locale.getDefault())
-                        ?.contains("intel") == true || line?.toLowerCase(Locale.getDefault())
-                        ?.contains("amd") == true
+                        ?.contains("intel") == true || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true
                 ) {
                     reader.close()
                     process.waitFor()
@@ -293,7 +290,8 @@ class EmulatorDetector : IDetection {
 
     /**
      * 特征参数-基带信息
-     * 待测试
+     * 空或者1.0.0.0为模拟器
+     * 存在误判
      */
     private fun checkBaseBandValue(): Int {
         val baseBandVersion = Build.getRadioVersion()
@@ -309,7 +307,7 @@ class EmulatorDetector : IDetection {
 
 
     /**
-     * 获取所有传感器名字
+     * 获取所有传感器
      *
      * @param context
      * @return
@@ -337,12 +335,6 @@ class EmulatorDetector : IDetection {
         return result
     }
 
-    private fun getOperatorName(context: Context): String {
-        val telephonyManager =
-            context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        detectedResults.add("networkOperatorName:${telephonyManager.networkOperatorName}\n")
-        return telephonyManager.networkOperatorName
-    }
 
     private fun fileExists(filePath: String): Boolean {
         return File(filePath).exists()
@@ -376,11 +368,12 @@ class EmulatorDetector : IDetection {
 
 
     override fun isDetected(context: Context): Boolean {
-        getOperatorName(context)
         var result = 0
-        var timeMillis = measureTimeMillis {
-            result = normalDetect(context)+isGenymotion(context)
-
+        val timeMillis = measureTimeMillis {
+            result =
+                isAS() + isGenymotion(context) + isMuMu(context) + isNox(context) + isXiaoYao(context) + normalDetect(
+                    context
+                )
         }
         detectedResults.add("timeMillis:$timeMillis \n result: $result\n")
         Log.d("result", result.toString())

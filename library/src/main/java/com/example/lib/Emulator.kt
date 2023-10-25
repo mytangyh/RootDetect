@@ -7,8 +7,6 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.util.Log
 import java.io.*
-import java.net.NetworkInterface
-import java.net.SocketException
 import java.util.*
 
 /**
@@ -197,10 +195,6 @@ class Emulator {
      * 模拟器版本 6.2.8.0003
      * 安卓版本5.1.1
      *
-     *
-     *
-     *
-     * 可能误判为52新星模拟器（待改进）都是Nox团队开发，都属于夜神范围
      *
      * @param context
      */
