@@ -12,5 +12,6 @@
 			android:layout_height="wrap_content"
 			android:text="@string/hello_blank_fragment"/>
 	
+	
 
 </LinearLayout>
