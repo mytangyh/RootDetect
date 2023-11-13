@@ -30,8 +30,19 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun init(){
 //        getExternalFilesDir(null)
-
-
+        val str = """<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>GBK Encoded HTML</title>
+</head>
+<body>
+  <h1>Hello, 你好</h1>
+  <p>This is an example of GBK encoded HTML content.</p>
+</body>
+</html>
+"""
+//        mbinding.webview.loadDataWithBaseURL(null,str,"text/html", "utf-8",null)
         mbinding.checkBtn.setOnClickListener {
 //            val rootDetection = RootDetector()
 
