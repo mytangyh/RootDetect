@@ -57,8 +57,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> DetailFragment()
-                1 -> AbstractFragment()
+                0 -> DetailFragment.newInstance("","")
+                1 -> AbstractFragment.newInstance("","")
                 else -> throw IllegalArgumentException("Invalid position")
             }
         }
