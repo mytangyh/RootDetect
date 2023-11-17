@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.lib.EmulatorDetector
+import com.example.lib.Hook
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -48,15 +49,15 @@ class MainActivity : AppCompatActivity() {
 
 //            val isRooted = rootDetection.isDetected()
 //            val results = rootDetection.getResults()
-            val emulatorDetector = EmulatorDetector()
-            val detected = emulatorDetector.isDetected(this)
-            val results = emulatorDetector.getResults()
+//            val emulatorDetector = EmulatorDetector()
+//            val detected = emulatorDetector.isDetected(this)
+//            val results = emulatorDetector.getResults()
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
-//            val hook = Hook()
-//            val tr = hook.detectXposedModules(this, true)
-//            val fa = hook.detectXposedModules(this, false)
-            mbinding.resultText.text = "detected:$detected\n,results:$results"
+            val hook = Hook()
+            val str="com.hexin.plat.android.QQ"
+            val appInstalled = hook.isAppInstalled(this, str)
+            mbinding.resultText.text = "detected:$,results:$appInstalled"
 
 
         }

@@ -2,11 +2,9 @@ package com.example.lib
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import kotlin.math.log
 
 class Hook:IDetection {
 
@@ -43,7 +41,15 @@ class Hook:IDetection {
 
         return "Result.NOT_FOUND"
     }
-
+    fun isAppInstalled(context: Context, packageName: String?): Boolean {
+        val pm = context.packageManager
+        return try {
+            pm.getPackageInfo(packageName!!, PackageManager.GET_ACTIVITIES)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
 
 
     override fun isDetected(context: Context): Boolean {
