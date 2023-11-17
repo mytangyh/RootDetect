@@ -2,7 +2,9 @@ package com.example.rootcheck
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import android.widget.RadioGroup
+import android.widget.RelativeLayout
 
 /**
  * 自动换行的RadioGroup
@@ -12,9 +14,11 @@ class LineWrapRadioGroup : RadioGroup {
     private var bFirstLine = true
     private var totalShowHeight = 0
     private var totalFolderShowHeight = 0
+    private var number=0
 
     // 控制是否显示所有
     private var bShowAll = false
+
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -105,7 +109,7 @@ class LineWrapRadioGroup : RadioGroup {
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        val count = childCount
+        var count = childCount
         //pre为前面所有的child的相加后的位置
         var preLeft = paddingLeft
         var preTop = paddingTop
@@ -132,10 +136,10 @@ class LineWrapRadioGroup : RadioGroup {
                 // 额外的margin_top间距，一旦换行，也就是从第二行开始就需要增加margin_top，记得累积
                 extern_margin_top = extern_margin_top + params.topMargin
                 bFirstLine = false
+                Log.d(TAG, "onLayout: ${number++}")
             } else { //不换行,计算最大高度
                 maxHeight = Math.max(
-                    maxHeight,
-                    child.measuredHeight + params.topMargin + params.bottomMargin
+                    maxHeight, child.measuredHeight + params.topMargin + params.bottomMargin
                 )
                 //@hl 换行第一次的第二个控件不能再加一次preLeft
                 left = if (!bFirstLine) {
@@ -156,6 +160,7 @@ class LineWrapRadioGroup : RadioGroup {
             child.layout(left, top, right, bottom)
             //计算布局结束后，preLeft的值
             preLeft += params.leftMargin + child.measuredWidth + params.rightMargin
+
         }
     }
 
@@ -173,6 +178,9 @@ class LineWrapRadioGroup : RadioGroup {
      */
     fun bHasMultiline(): Boolean {
         return line_cout >= MAX_SHOW_COUNT
+    }
+    fun getNumber():Int{
+        return number
     }
 
     companion object {

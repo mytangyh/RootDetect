@@ -1,9 +1,12 @@
 package com.example.rootcheck
 
+import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.rootcheck.databinding.FragmentDetailBinding
@@ -18,12 +21,18 @@ class DetailFragment : Fragment() {
     private var mParam1: String? = null
     private var mParam2: String? = null
     private lateinit var binding: FragmentDetailBinding
+    private var isExpand = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (arguments != null) {
             mParam1 = requireArguments().getString(ARG_PARAM1)
             mParam2 = requireArguments().getString(ARG_PARAM2)
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
     }
 
     override fun onCreateView(
@@ -59,17 +68,24 @@ class DetailFragment : Fragment() {
             "撒啊啊我日日",
             "飒飒的是"
         )
+
         binding.group.removeAllViews()
         for (i in listOf){
             val itemLayout = inflater.inflate(R.layout.item_view,container,false)
             val label = itemLayout.findViewById<TextView>(R.id.textView)
             label.text=i
             binding.group.addView(itemLayout)
+            val bHasMultiline = binding.group.getNumber()
+            Log.d("TAG",bHasMultiline.toString())
+        }
+
+        binding.button.setOnClickListener{
+            binding.group.requestShowMeasure(isExpand)
+            isExpand = !isExpand
+
 
         }
-        binding.button.setOnClickListener{
-            binding.group.requestShowMeasure(true)
-        }
+
         return rootView
     }
 
