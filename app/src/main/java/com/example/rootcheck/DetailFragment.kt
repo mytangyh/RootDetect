@@ -1,12 +1,9 @@
 package com.example.rootcheck
 
-import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.WebView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.rootcheck.databinding.FragmentDetailBinding
@@ -76,7 +73,7 @@ class DetailFragment : Fragment() {
             label.text=i
             binding.group.addView(itemLayout)
             val bHasMultiline = binding.group.getNumber()
-            Log.d("TAG",bHasMultiline.toString())
+//            Log.d("TAG",bHasMultiline.toString())
         }
 
         binding.button.setOnClickListener{

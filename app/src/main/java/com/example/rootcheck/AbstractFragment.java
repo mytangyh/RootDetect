@@ -1,10 +1,13 @@
 package com.example.rootcheck;
 
+import android.content.Context;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.fragment.app.Fragment;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -51,6 +54,9 @@ public class AbstractFragment extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+         String country = getNetworkCountryISO(getContext());
+            String country2 = getCountry(getContext());
+        Log.d("TAG", "onCreate: "+country+"  "+country2);
     }
 
     @Override
@@ -59,4 +65,21 @@ public class AbstractFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_abstract, container, false);
     }
+
+    private String getNetworkCountryISO(Context context){
+        String countryISO = null;
+        try {
+            countryISO = context.getResources().getConfiguration().locale.getCountry();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return countryISO;
+    }
+   private String getCountry(Context context){
+       TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+       return tm.getNetworkCountryIso();
+   }
+
+
+
 }
