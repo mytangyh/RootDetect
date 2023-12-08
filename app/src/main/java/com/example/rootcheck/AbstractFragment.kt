@@ -1,12 +1,18 @@
 package com.example.rootcheck
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import androidx.fragment.app.Fragment
 import com.example.rootcheck.databinding.FragmentAbstractBinding
+import com.github.lzyzsd.jsbridge.BridgeWebView
+import com.github.lzyzsd.jsbridge.BridgeWebViewClient
 
 
 /**
@@ -19,12 +25,14 @@ class AbstractFragment : Fragment() {
     private var mParam1: String? = null
     private var mParam2: String? = null
     private lateinit var viewBinding: FragmentAbstractBinding
+    private var mContext: Context?=null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (arguments != null) {
             mParam1 = requireArguments().getString(ARG_PARAM1)
             mParam2 = requireArguments().getString(ARG_PARAM2)
         }
+        mContext=requireContext()
     }
 
     override fun onCreateView(
@@ -35,18 +43,23 @@ class AbstractFragment : Fragment() {
         viewBinding = FragmentAbstractBinding.inflate(inflater, container, false)
         val webView = viewBinding.webView
         webView.settings.javaScriptEnabled = true
+        webView.settings.loadWithOverviewMode = true
+        webView.getSettings().setUserAgentString("User-Agent:Android");
 
+        webView.webViewClient = BridgeClient(webView)
         webView.registerHandler("submitFromWeb") { data, function ->
             Log.i("TAG", "handler = submitFromWeb, data from web = $data")
             function.onCallBack("submitFromWeb exe, response data from Java")
         }
 
         viewBinding.buttom.setOnClickListener {
-//            webView.loadUrl("http://yytest.ths8.com:8081/idiyun-web-h5/#/promotion?app=kc")
-            webView.loadUrl("file:///android_asset/test.html")
+            webView.loadUrl("http://yytest.ths8.com:8081/idiyun-web-h5/#/promotion?app=kc")
+//            webView.loadUrl("file:///android_asset/test.html")
+//            webView.loadUrl("https://mp.weixin.qq.com/s/qK7iLFR7c6GbwMLIDtPraw")
         }
         return viewBinding.root
     }
+
 
 
     companion object {
@@ -73,4 +86,33 @@ class AbstractFragment : Fragment() {
             return fragment
         }
     }
+    private inner class BridgeClient( webView: BridgeWebView) : BridgeWebViewClient(webView) {
+        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
+
+            // 根据条件判断是否在 WebView 中加载该 URL
+            return if (shouldOpenInExternalBrowser(url)) {
+                // 使用 Intent 调用系统浏览器打开链接
+                openExternalBrowser(url)
+                true
+            } else {
+//                false
+
+                super.shouldOverrideUrlLoading(view, url)
+            }
+        }
+
+        private fun shouldOpenInExternalBrowser(url: String): Boolean {
+            // 根据自定义条件判断是否在 WebView 中加载该 URL
+            return url.contains("download")||url.contains("install")
+        }
+
+        private fun openExternalBrowser(url: String) {
+            // 使用 Intent 调用系统浏览器
+            Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                requireContext().startActivity(this)
+            }
+        }
+    }
+
+
 }

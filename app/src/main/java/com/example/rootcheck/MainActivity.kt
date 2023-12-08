@@ -45,19 +45,19 @@ class MainActivity : AppCompatActivity() {
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
             val hook = Hook()
-            val str="com.hexin.plat.android.HongXinSecurity"
+            val str="com.hexin.yuqing"
             val appInstalled = isAppInstalled(this, str)
             val country = getCountry(this)
 
-            mbinding.resultText.text = "country:$country"
+            mbinding.resultText.text = "appInstalled:$appInstalled"
 
 
         }
     }
-    fun isAppInstalled(context: Context, packageName: String?): Boolean {
+    fun isAppInstalled(context: Context, packageName: String): Boolean {
         val pm = context.packageManager
         return try {
-            pm.getPackageInfo(packageName!!, PackageManager.GET_ACTIVITIES)
+            packageManager.getPackageInfo(packageName, 0)
             true
         } catch (e: PackageManager.NameNotFoundException) {
             false
