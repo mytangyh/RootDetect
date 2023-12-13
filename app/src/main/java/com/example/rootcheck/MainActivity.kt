@@ -5,11 +5,13 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.telephony.TelephonyManager
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.lib.Hook
+import com.example.lib.RootDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
 
@@ -20,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         mbinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mbinding.root)
-
+        init()
         mbinding.viewPager.adapter=MyPagerAdapter(this)
         TabLayoutMediator(mbinding.tabLayout, mbinding.viewPager) { tab, position ->
             when (position) {
@@ -28,10 +30,21 @@ class MainActivity : AppCompatActivity() {
                 1 -> tab.text = "Tab 2"
             }
         }.attach()
-        init()
     }
     @SuppressLint("SetTextI18n")
     private fun init(){
+        val rootDetection = RootDetector()
+        val isRooted = rootDetection.isDetected(this)
+        if (isRooted){
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Root Warning!!")
+            builder.setMessage("Devices Rooted!!")
+            builder.setPositiveButton("确定") { _, _ ->
+                finish()
+            }
+            val dialog = builder.create()
+            dialog.show()
+        }
 
 //        mbinding.webview.loadDataWithBaseURL(null,str,"text/html", "utf-8",null)
         mbinding.checkBtn.setOnClickListener {
@@ -45,11 +58,11 @@ class MainActivity : AppCompatActivity() {
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
             val hook = Hook()
-            val str="com.hexin.yuqing"
-            val appInstalled = isAppInstalled(this, str)
+//            val str="com.hexin.yuqing"
+//            val appInstalled = isAppInstalled(this, str)
             val country = getCountry(this)
 
-            mbinding.resultText.text = "appInstalled:$appInstalled"
+            mbinding.resultText.text = "isRooted:$isRooted"
 
 
         }
