@@ -52,4 +52,6 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     implementation(project(":library"))
     implementation ("com.github.lzyzsd:jsbridge:1.0.4")
+    implementation ("com.tencent:mmkv:1.3.2")
+
 }

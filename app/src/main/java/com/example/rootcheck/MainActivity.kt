@@ -5,21 +5,30 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.telephony.TelephonyManager
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.lib.Hook
+import com.example.lib.HookDetector
 import com.example.lib.RootDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
+import com.tencent.mmkv.MMKV
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mbinding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MMKV.initialize(this)
+        if (!MMKVUtils.getString("first").equals("first")){
+            MMKVUtils.saveString("first","first")
+            Log.d("TAG", "onCreate: first")
+        }
+
         mbinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mbinding.root)
         init()
@@ -35,12 +44,13 @@ class MainActivity : AppCompatActivity() {
     private fun init(){
         val rootDetection = RootDetector()
         val isRooted = rootDetection.isDetected(this)
+        MMKVUtils.put("isRooted","isRooted")
         if (isRooted){
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Root Warning!!")
-            builder.setMessage("Devices Rooted!!")
+            builder.setMessage(MMKVUtils.getString("isRooted"))
             builder.setPositiveButton("确定") { _, _ ->
-                finish()
+//                finish()
             }
             val dialog = builder.create()
             dialog.show()
@@ -57,12 +67,15 @@ class MainActivity : AppCompatActivity() {
 //            val results = emulatorDetector.getResults()
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
-            val hook = Hook()
+            val hook = HookDetector()
 //            val str="com.hexin.yuqing"
 //            val appInstalled = isAppInstalled(this, str)
             val country = getCountry(this)
+            val fridaServerRunning = hook.isDetected(this)
+            MMKVUtils.put("test","ssss")
+            val get = MMKVUtils.get<String>("test")
 
-            mbinding.resultText.text = "isRooted:$isRooted"
+            mbinding.resultText.text = "get:${get}"
 
 
         }

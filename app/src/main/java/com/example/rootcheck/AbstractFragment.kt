@@ -53,7 +53,7 @@ class AbstractFragment : Fragment() {
         }
 
         viewBinding.buttom.setOnClickListener {
-            webView.loadUrl("http://yytest.ths8.com:8081/idiyun-web-h5/#/promotion?app=kc")
+            webView.loadUrl("http://jrzd.dwstock.com:8066/policy/index.html?code=privacypolicy")
 //            webView.loadUrl("file:///android_asset/test.html")
 //            webView.loadUrl("https://mp.weixin.qq.com/s/qK7iLFR7c6GbwMLIDtPraw")
         }

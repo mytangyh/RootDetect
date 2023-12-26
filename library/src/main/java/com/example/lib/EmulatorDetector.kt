@@ -164,18 +164,13 @@ class EmulatorDetector : IDetection {
             "/dev/qemu_pipe",
             "/dev/qemu_trace"
         )
-
-
         var result = 0
-
         for (fileName in knownFiles) {
             if (fileExists(fileName)) {
                 result += 1
-                detectedResults.add("checkForQEMU:$fileName\n")
                 break
             }
         }
-
         val knownQEMUDrivers = "goldfish"
         for (driversFile in arrayOf(
             File("/proc/tty/drivers"), File("/proc/cpuinfo")
@@ -190,10 +185,8 @@ class EmulatorDetector : IDetection {
                     exception.printStackTrace()
                 }
                 val driverData = String(data)
-
                 if (driverData.contains(knownQEMUDrivers)) {
                     result += 1
-                    detectedResults.add("checkForQEMU:$driverData\n")
                     break
                 }
             }
@@ -211,15 +204,19 @@ class EmulatorDetector : IDetection {
         if (primaryABI.contains("x86")) result++
 
         // 检测唯一识别码FINGERPRINT
-        val isGeneric = Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
+        val isGeneric = Build.FINGERPRINT.startsWith("generic")
+                || Build.FINGERPRINT.startsWith("generic_x86")
         val hasTestKeys =
-            Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys") || Build.FINGERPRINT.toLowerCase(
+            Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys")
+                    || Build.FINGERPRINT.toLowerCase(
                 Locale.getDefault()
             ).contains("dev-keys")
         if (isGeneric || hasTestKeys) result += 1
 
         // 检测MODEL
-        val isEmulator = Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains(
+        val isEmulator = Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("google_sdk")
+                || Build.MODEL.contains(
             "Android SDK built for x86"
         ) || Build.MODEL.contains(
             "Android SDK built for x86_64"
@@ -270,7 +267,8 @@ class EmulatorDetector : IDetection {
 
             while (reader.readLine().also { line = it } != null) {
                 if (line?.toLowerCase(Locale.getDefault())
-                        ?.contains("intel") == true || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true
+                        ?.contains("intel") == true
+                    || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true
                 ) {
                     reader.close()
                     process.waitFor()
