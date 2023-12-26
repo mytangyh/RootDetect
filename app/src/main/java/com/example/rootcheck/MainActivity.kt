@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.lib.Hook
 import com.example.lib.HookDetector
+import com.example.lib.Native
 import com.example.lib.RootDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
@@ -75,7 +76,8 @@ class MainActivity : AppCompatActivity() {
             MMKVUtils.put("test","ssss")
             val get = MMKVUtils.get<String>("test")
 
-            mbinding.resultText.text = "get:${get}"
+            val nativeString = Native.getNativeString()
+            mbinding.resultText.text = "nativeString:${nativeString}"
 
 
         }
