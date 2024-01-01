@@ -7,5 +7,6 @@ class Native {
         }
 
         external fun getNativeString(): String
+        external fun checkFrida():String
     }
 }

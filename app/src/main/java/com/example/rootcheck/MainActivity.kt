@@ -77,7 +77,8 @@ class MainActivity : AppCompatActivity() {
             val get = MMKVUtils.get<String>("test")
 
             val nativeString = Native.getNativeString()
-            mbinding.resultText.text = "nativeString:${nativeString}"
+            val checkFrida = Native.checkFrida()
+            mbinding.resultText.text = "nativeString:${nativeString},checkFrida:${checkFrida}"
 
 
         }
