@@ -192,31 +192,31 @@ class EmulatorDetectorNew : IDetection {
         if (primaryABI.contains("x86")) result++
 
         // 检测唯一识别码FINGERPRINT
-        val isGeneric = Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.startsWith("generic_x86")
-        val hasTestKeys =
-            Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys")
-                    || Build.FINGERPRINT.toLowerCase(
-                Locale.getDefault()
-            ).contains("dev-keys")
+        val isGeneric =
+            Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
+        val hasTestKeys = Build.FINGERPRINT.toLowerCase(Locale.getDefault())
+            .contains("test-keys") || Build.FINGERPRINT.toLowerCase(
+            Locale.getDefault()
+        ).contains("dev-keys")
         if (isGeneric || hasTestKeys) result += 1
 
         // 检测MODEL
-        val isEmulator = Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains(
-            "Android SDK built for x86"
-        ) || Build.MODEL.contains(
-            "Android SDK built for x86_64"
-        )
+        val isEmulator =
+            Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains(
+                "Android SDK built for x86"
+            ) || Build.MODEL.contains(
+                "Android SDK built for x86_64"
+            )
         if (isEmulator) result++
 
         // 检测厂商信息
-        val isGenymotion = Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
+        val isGenymotion =
+            Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
         if (isGenymotion) result++
 
         // 检测BRAND、HARDWARE、DEVICE信息
-        val isGenericBrand = Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
+        val isGenericBrand =
+            Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
         if (isGenericBrand) result++
         val isGoldfishHardware = Build.HARDWARE == "goldfish"
         if (isGoldfishHardware) result++
@@ -251,8 +251,8 @@ class EmulatorDetectorNew : IDetection {
 
             while (reader.readLine().also { line = it } != null) {
                 if (line?.lowercase(Locale.getDefault())
-                        ?.contains("intel") == true
-                    || line?.lowercase(Locale.getDefault())?.contains("amd") == true
+                        ?.contains("intel") == true || line?.lowercase(Locale.getDefault())
+                        ?.contains("amd") == true
                 ) {
                     reader.close()
                     process.waitFor()
@@ -340,16 +340,9 @@ class EmulatorDetectorNew : IDetection {
 
 
     override fun isDetected(context: Context): Boolean {
-        var result = 0
-        val timeMillis = measureTimeMillis {
-            result =
-                isMuMu(context) + isNox(context) + isXiaoYao(context)+isAS() + isGenymotion(context)  + normalDetect(
-                    context
-                )
-        }
-        detectedResults.add("timeMillis:$timeMillis \n result: $result\n")
-        Log.d("result", result.toString())
-        return result > 0
+        return isMuMu(context) > 0 || isNox(context) > 0 || isXiaoYao(context) > 0 || isAS() > 0 || isGenymotion(
+            context
+        ) > 0 || normalDetect(context) > 2
     }
 
 
