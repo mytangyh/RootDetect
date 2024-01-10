@@ -266,6 +266,7 @@ class EmulatorDetector : IDetection {
             var line: String?
 
             while (reader.readLine().also { line = it } != null) {
+                detectedResults.add("checkCpu:$line  ")
                 if (line?.toLowerCase(Locale.getDefault())
                         ?.contains("intel") == true
                     || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true

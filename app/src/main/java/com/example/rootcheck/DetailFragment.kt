@@ -1,5 +1,6 @@
 package com.example.rootcheck
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -79,8 +80,10 @@ class DetailFragment : Fragment() {
         binding.button.setOnClickListener{
             binding.group.requestShowMeasure(isExpand)
             isExpand = !isExpand
-
-
+        }
+        binding.button2.setOnClickListener{
+            val intent = Intent(requireContext(),TestActivity::class.java)
+            startActivity(intent)
         }
 
         return rootView

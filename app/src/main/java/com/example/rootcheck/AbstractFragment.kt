@@ -53,9 +53,15 @@ class AbstractFragment : Fragment() {
         }
 
         viewBinding.buttom.setOnClickListener {
-            webView.loadUrl("http://jrzd.dwstock.com:8066/policy/index.html?code=privacypolicy")
+//            webView.loadUrl("http://jrzd.dwstock.com:8066/policy/index.html?code=privacypolicy")
 //            webView.loadUrl("file:///android_asset/test.html")
 //            webView.loadUrl("https://mp.weixin.qq.com/s/qK7iLFR7c6GbwMLIDtPraw")
+            val url = "http://jrzd.dwstock.com:8066/policy/index.html?code=privacypolicy"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            val chooser = Intent.createChooser(intent, "Choose a browser")
+            startActivity(chooser)
+
+
         }
         return viewBinding.root
     }

@@ -19,6 +19,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Test" />
+    <EditText
+        android:hint="password"
+        android:inputType="textPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/passNew"
+        android:hint="new"
+        android:inputType="textPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
