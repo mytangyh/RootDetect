@@ -1,16 +1,9 @@
 #include <jni.h>
-#include <cstring>
-#include <cerrno>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/socket.h>
-#include <cstdio>
 #include <dirent.h>
 #include <fstream>
-#include <string>
-#include <iostream>
-#include <sys/ptrace.h>
 
 using namespace std;
 
