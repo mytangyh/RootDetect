@@ -41,15 +41,7 @@ class Hook:IDetection {
 
         return "Result.NOT_FOUND"
     }
-    fun isAppInstalled(context: Context, packageName: String?): Boolean {
-        val pm = context.packageManager
-        return try {
-            pm.getPackageInfo(packageName!!, PackageManager.GET_ACTIVITIES)
-            true
-        } catch (e: PackageManager.NameNotFoundException) {
-            false
-        }
-    }
+
 
 
     override fun isDetected(context: Context): Boolean {

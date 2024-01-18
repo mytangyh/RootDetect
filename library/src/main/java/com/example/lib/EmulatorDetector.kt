@@ -320,7 +320,7 @@ class EmulatorDetector : IDetection {
             result++
         }
         val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
-        sensorList.forEach { Log.d("sensorList", it.name) }
+//        sensorList.forEach { Log.d("sensorList", it.name) }
         detectedResults.add("checkSensors:${sensorList.size}\n")
         if (sensorList.size < 10) result++
         return result

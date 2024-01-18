@@ -8,6 +8,11 @@
 #include <cstdio>
 #include <dirent.h>
 #include <android/log.h>
+#include <fstream>
+#include <string>
+
+
+using namespace std;
 
 #define LOG_TAG "MyApp"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -61,7 +66,8 @@ public:
         }
         return false;
     }
-    bool check_fd(){
+
+    bool check_fd() {
         LOGI("in AntiFrida::check_fd");
         DIR *dir = NULL;
         struct dirent *entry;
@@ -77,7 +83,8 @@ public:
                     case DT_LNK:
                         sprintf(link_name, "%s/%s", "/proc/self/fd/", entry->d_name);
                         readlink(link_name, buf, sizeof(buf));
-                        if (strstr(buf, "frida") || strstr(buf, "gum-js-loop") || strstr(buf, "gmain") ||
+                        if (strstr(buf, "frida") || strstr(buf, "gum-js-loop") ||
+                            strstr(buf, "gmain") ||
                             strstr(buf, "-gadget") || strstr(buf, "linjector")) {
                             LOGI("check_fd -> find frida:%s", buf);
                             ret = true;
@@ -94,7 +101,7 @@ public:
 
     }
 
-    char* get_frida_server_status() {
+    char *get_frida_server_status() {
         struct sockaddr_in sa;
         memset(&sa, 0, sizeof(sa));
         sa.sin_family = AF_INET;
@@ -102,7 +109,7 @@ public:
         inet_aton("127.0.0.1", &(sa.sin_addr));
 
         int sock = socket(AF_INET, SOCK_STREAM, 0);
-        if (connect(sock, (struct sockaddr*)&sa, sizeof sa) != -1) {
+        if (connect(sock, (struct sockaddr *) &sa, sizeof sa) != -1) {
             close(sock);
             return strdup("Frida server is running.");
         }
@@ -110,23 +117,25 @@ public:
         close(sock);
         return strdup("Frida server is not running.");
     }
+
+
+    string isFridaInjected() {
+        ifstream maps("/proc/self/maps");
+        string line;
+
+        while (getline(maps, line)) {
+            if (line.find("frida") != string::npos) {
+                maps.close();
+                return "true+++";
+            }
+        }
+
+        return "false";
+    }
 };
 
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_example_lib_Native_00024Companion_getNativeString(JNIEnv *env, jobject thiz) {
-    // TODO: implement getNativeString()
-    return env->NewStringUTF("Hello from C++!");
-}
 
-extern "C"
-JNIEXPORT jstring JNICALL
-Java_com_example_lib_Native_00024Companion_checkFrida(JNIEnv *env, jobject thiz) {
-AntiFrida antiFrida;
-    char* status = antiFrida.get_frida_server_status();
-    bool res = antiFrida.check_fd();
-    jstring jStatus = env->NewStringUTF(reinterpret_cast<const char *>(res));
-    return jStatus;
-}
+
+
 
 

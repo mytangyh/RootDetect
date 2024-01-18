@@ -1,12 +1,15 @@
 package com.example.rootcheck
 
+import android.app.ActionBar.LayoutParams
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.example.lib.LogUtil
 import com.example.rootcheck.databinding.FragmentDetailBinding
 
 /**
@@ -41,14 +44,7 @@ class DetailFragment : Fragment() {
         binding = FragmentDetailBinding.inflate(inflater, container, false)
         val rootView=binding.root
         val listOf = listOf(
-            "测试",
-            "搜  萨达索",
-            "仍然稳定",
-            "山东",
-            "十五",
-            "烦烦烦",
-            "鹅鹅鹅 ",
-            "撒旦撒",
+
             "二二方法",
             "我为人人",
             "撒啊啊我日日",
@@ -68,18 +64,27 @@ class DetailFragment : Fragment() {
         )
 
         binding.group.removeAllViews()
+        binding.group.setMax(2)
         for (i in listOf){
-            val itemLayout = inflater.inflate(R.layout.item_view,container,false)
+
+            val itemLayout = inflater.inflate(R.layout.item_view,binding.group,false)
             val label = itemLayout.findViewById<TextView>(R.id.textView)
             label.text=i
+            // 设置边距
+            val layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            layoutParams.setMargins(10, 10, 0, 0)  // 设置左、上、右、下的边距，单位是像素
+            itemLayout.layoutParams = layoutParams
             binding.group.addView(itemLayout)
-            val bHasMultiline = binding.group.getNumber()
-//            Log.d("TAG",bHasMultiline.toString())
         }
-
+        LogUtil.d(binding.group.getNumber().toString())
         binding.button.setOnClickListener{
             binding.group.requestShowMeasure(isExpand)
             isExpand = !isExpand
+            LogUtil.d(binding.group.getNumber().toString())
+
         }
         binding.button2.setOnClickListener{
             val intent = Intent(requireContext(),TestActivity::class.java)

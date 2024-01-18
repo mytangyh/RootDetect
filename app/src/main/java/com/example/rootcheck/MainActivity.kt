@@ -49,24 +49,6 @@ class MainActivity : AppCompatActivity() {
         }.attach()
     }
 
-    override fun onResume() {
-        super.onResume()
-        // 获取剪切板管理器
-//        val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-//
-//        if (clipboardManager.hasPrimaryClip()) {
-//            val clip = clipboardManager.primaryClip
-//            val item = clip?.getItemAt(0)
-//            val clipboardText = item?.text.toString()
-//            Toast.makeText(this, clipboardText, Toast.LENGTH_SHORT).show()
-//        }
-
-    }
-    private fun handleClipboardContent(clipboardText: String) {
-        // 在这里处理剪切板内容
-        // 例如，显示在界面上或执行特定操作
-
-    }
     @SuppressLint("SetTextI18n")
     private fun init() {
         mbinding.passNew.transformationMethod = CustomPasswordTransformationMethod()
@@ -106,14 +88,13 @@ class MainActivity : AppCompatActivity() {
 //            val str="com.hexin.yuqing"
 //            val appInstalled = isAppInstalled(this, str)
             val country = getCountry(this)
-            val fridaServerRunning = hook.isDetected(this)
             MMKVUtils.put("test", "ssss")
             val get = MMKVUtils.get<String>("test")
 
-            val nativeString = Native.getNativeString()
             val checkFrida = Native.checkFrida()
+//            hook.Procmaps()
 
-            mbinding.resultText.text = "password${mbinding.passNew.text}"
+            mbinding.resultText.text = "fridaServerRunning:$checkFrida"
 
 
         }

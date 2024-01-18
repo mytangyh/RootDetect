@@ -1,52 +1,45 @@
 package com.example.lib
 
-import android.app.ActivityManager
 import android.content.Context
+import android.util.Log
+import java.io.BufferedReader
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileReader
+import java.io.IOException
+import java.io.InputStreamReader
 
-class HookDetector :IDetection {
 
-    private fun findFridaFile(): Boolean {
-        val directory = File("/data/local/tmp/")
+class HookDetector : IDetection {
 
-        // 检查目录是否存在
-        if (directory.exists() && directory.isDirectory) {
-            // 获取目录下的所有文件
-            val files = directory.listFiles()
 
-            // 遍历文件列表，检查文件名是否包含 "frida"
-            files?.let {
-                for (file in it) {
-                    LogUtil.d(file.name)
-                    if (file.name.contains("frida", ignoreCase = true)) {
-                        return true
+    fun check_proc_task(): Boolean {
+        val dir = File("/proc/self/task/")
+        val tasks = dir.listFiles()
+        if (tasks != null) {
+            for (task in tasks) {
+                try {
+                    val reader = BufferedReader(FileReader(task.absolutePath + "/status"))
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        if (line?.contains("gmain") == true || line?.contains("pool-frida") == true || line?.contains(
+                                "gdbus"
+                            ) == true || (line?.contains("gum-js-loop") == true)
+                        ) {
+                            return true
+                        }
                     }
+                } catch (e: IOException) {
+                    e.printStackTrace()
                 }
             }
         }
         return false
     }
-    fun getFileNamesInDataLocalTmp(context: Context): List<String> {
-        // 获取 Context.getExternalFilesDir() 方法返回的文件夹
-        val directory = context.getExternalFilesDir("/data/local/tmp/")
 
-        // 获取所有文件
-        val files = directory?.listFiles()
 
-        // 将文件名存储到列表中
-        val fileNames = mutableListOf<String>()
-        if (files != null) {
-            for (file in files) {
-                fileNames.add(file.name)
-            }
-        }
-
-        // 返回文件名列表
-        return fileNames
-    }
     override fun isDetected(context: Context): Boolean {
-        getFileNamesInDataLocalTmp(context)
-      return findFridaFile()
+        return false
     }
 
     override fun getResults(): List<String> {

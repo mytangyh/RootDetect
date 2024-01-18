@@ -3,10 +3,9 @@ package com.example.lib
 class Native {
     companion object {
         init {
-            System.loadLibrary("main")
+            System.loadLibrary("frida_detect")
         }
 
-        external fun getNativeString(): String
-        external fun checkFrida():String
+        external fun checkFrida():Boolean
     }
 }
