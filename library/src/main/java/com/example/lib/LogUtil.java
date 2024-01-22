@@ -31,8 +31,7 @@ public class LogUtil {
 
     public static void d(String info) {
         if (isDebug) {
-            Log.d(TAG, "--------" + info + "--------");
-            //Log.d(TAG, "         -----------------------          ");
+            Log.d(TAG, "--------\n" + info + "\n--------");
         }
     }
 }

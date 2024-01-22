@@ -40,7 +40,6 @@ class RootDetector : IDetection {
             "/cache/",
             "/dev"
         )
-
         // 需要检测的特定文件列表
         val files = arrayOf(
             "su",
@@ -48,12 +47,10 @@ class RootDetector : IDetection {
             "magisk",
             ".magisk"
         )
-
         // 生成所有可能的文件路径组合
         val filePaths = places.flatMap { place ->
             files.map { file -> "$place$file" }
         }
-
         // 将存在的文件路径添加到结果列表中
         results.addAll(filePaths.filter { fileExists(it) })
 

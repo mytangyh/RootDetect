@@ -2,11 +2,9 @@ package com.example.lib
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
-import kotlin.math.log
 
 class Hook:IDetection {
 

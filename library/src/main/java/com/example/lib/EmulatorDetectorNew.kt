@@ -13,7 +13,7 @@ import java.io.InputStreamReader
 import java.util.*
 import kotlin.system.measureTimeMillis
 
-class EmulatorDetector : IDetection {
+class EmulatorDetectorNew : IDetection {
     private val detectedResults = mutableListOf<String>()
 
     /**
@@ -32,9 +32,7 @@ class EmulatorDetector : IDetection {
 
     private fun isMuMu(context: Context): Int {
         val appPackageCount = hasAppPackage(context, mmAppPackage)
-        detectedResults.add("appPackageCount:$appPackageCount\n")
         val markCount = isMark(mmAppName)
-        detectedResults.add("markCount:$markCount\n")
         val model = Build.MODEL
         val isMuMuModel = if (model == "MuMu") 1 else 0
         return appPackageCount + markCount + isMuMuModel
@@ -57,9 +55,7 @@ class EmulatorDetector : IDetection {
 
     private fun isNox(context: Context): Int {
         val appPackageCount = hasAppPackage(context, ysAppPackage)
-        detectedResults.add("appPackageCount:$appPackageCount\n")
         val markCount = isMark(ysAppName)
-        detectedResults.add("markCount:$markCount\n")
         return appPackageCount + markCount
     }
 
@@ -89,9 +85,7 @@ class EmulatorDetector : IDetection {
 
     private fun isXiaoYao(context: Context): Int {
         val appPackageCount = hasAppPackage(context, xyAppPackage)
-        detectedResults.add("appPackageCount:$appPackageCount\n")
         val markCount = isMark(xyAppName)
-        detectedResults.add("markCount:$markCount\n")
         return appPackageCount + markCount
     }
 
@@ -115,12 +109,7 @@ class EmulatorDetector : IDetection {
 
     private fun isGenymotion(context: Context): Int {
         val appPackageCount = hasAppPackage(context, geAppPackage)
-        detectedResults.add("appPackageCount:$appPackageCount\n")
         val markCount = isMark(geAppName)
-        detectedResults.add("markCount:$markCount\n")
-//        var systemApp = CommonUtils.isSystemApp(context, geAppPackage)
-//        detectedResults.add("systemApp:$systemApp\n")
-
         return appPackageCount + markCount
     }
 
@@ -145,7 +134,6 @@ class EmulatorDetector : IDetection {
      */
     private fun hasQEmuProps(): Int {
         val propertyValue = System.getProperty("ro.kernel.qemu")
-        detectedResults.add("hasQEmuProps:$propertyValue\n")
         return if (propertyValue == "1") 1 else 0
     }
 
@@ -204,31 +192,31 @@ class EmulatorDetector : IDetection {
         if (primaryABI.contains("x86")) result++
 
         // 检测唯一识别码FINGERPRINT
-        val isGeneric = Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.startsWith("generic_x86")
-        val hasTestKeys =
-            Build.FINGERPRINT.toLowerCase(Locale.getDefault()).contains("test-keys")
-                    || Build.FINGERPRINT.toLowerCase(
-                Locale.getDefault()
-            ).contains("dev-keys")
+        val isGeneric =
+            Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.startsWith("generic_x86")
+        val hasTestKeys = Build.FINGERPRINT.toLowerCase(Locale.getDefault())
+            .contains("test-keys") || Build.FINGERPRINT.toLowerCase(
+            Locale.getDefault()
+        ).contains("dev-keys")
         if (isGeneric || hasTestKeys) result += 1
 
         // 检测MODEL
-        val isEmulator = Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains(
-            "Android SDK built for x86"
-        ) || Build.MODEL.contains(
-            "Android SDK built for x86_64"
-        )
+        val isEmulator =
+            Build.MODEL.contains("Emulator") || Build.MODEL.contains("google_sdk") || Build.MODEL.contains(
+                "Android SDK built for x86"
+            ) || Build.MODEL.contains(
+                "Android SDK built for x86_64"
+            )
         if (isEmulator) result++
 
         // 检测厂商信息
-        val isGenymotion = Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
+        val isGenymotion =
+            Build.MANUFACTURER.contains("Genymotion") || Build.MANUFACTURER.contains("unknown")
         if (isGenymotion) result++
 
         // 检测BRAND、HARDWARE、DEVICE信息
-        val isGenericBrand = Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
+        val isGenericBrand =
+            Build.BRAND.startsWith("generic") || Build.BRAND.startsWith("generic_x86")
         if (isGenericBrand) result++
         val isGoldfishHardware = Build.HARDWARE == "goldfish"
         if (isGoldfishHardware) result++
@@ -245,10 +233,6 @@ class EmulatorDetector : IDetection {
             "google_sdk", "sdk", "sdk_google", "sdk_x86", "vbox86p", "sdk_google_phone_x86"
         ).contains(Build.PRODUCT)
         if (isGoogleProduct) result++
-        detectedResults.add(
-            "checkBuildInfo:\n " + Build.SUPPORTED_ABIS.joinToString(",") + "\n" + Build.FINGERPRINT + "\n" + Build.MODEL + "\n" + Build.MANUFACTURER + "\n" + Build.BRAND + "\n" + Build.HARDWARE + "\n" + Build.DEVICE + "\n"
-        )
-
         return result
     }
 
@@ -266,14 +250,12 @@ class EmulatorDetector : IDetection {
             var line: String?
 
             while (reader.readLine().also { line = it } != null) {
-                detectedResults.add("checkCpu:$line  ")
-                if (line?.toLowerCase(Locale.getDefault())
-                        ?.contains("intel") == true
-                    || line?.toLowerCase(Locale.getDefault())?.contains("amd") == true
+                if (line?.lowercase(Locale.getDefault())
+                        ?.contains("intel") == true || line?.lowercase(Locale.getDefault())
+                        ?.contains("amd") == true
                 ) {
                     reader.close()
                     process.waitFor()
-                    detectedResults.add("checkCpu:$line\n")
                     return 1
                 }
             }
@@ -294,7 +276,6 @@ class EmulatorDetector : IDetection {
      */
     private fun checkBaseBandValue(): Int {
         val baseBandVersion = Build.getRadioVersion()
-        detectedResults.add("checkBaseBandValue:$baseBandVersion\n")
         return if (baseBandVersion.isNullOrEmpty()) {
             1
         } else if (baseBandVersion.contains("1.0.0.0")) {
@@ -314,14 +295,7 @@ class EmulatorDetector : IDetection {
     private fun checkSensors(context: Context): Int {
         var result = 0
         val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val light = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
-        if (light == null) {
-            detectedResults.add("checkLightSensors:light\n")
-            result++
-        }
         val sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL)
-//        sensorList.forEach { Log.d("sensorList", it.name) }
-        detectedResults.add("checkSensors:${sensorList.size}\n")
         if (sensorList.size < 10) result++
         return result
     }
@@ -330,7 +304,7 @@ class EmulatorDetector : IDetection {
         var result = 0
         result += hasQEmuProps() + checkForQEMU() + checkBuildInfo() + checkCpu() + checkBaseBandValue() + checkSensors(
             context
-        ) + isMark(vBoxFile)
+        )
         return result
     }
 
@@ -340,14 +314,13 @@ class EmulatorDetector : IDetection {
     }
 
     private fun isMark(filePaths: Array<String>): Int {
+        var result = 0
         for (s in filePaths) {
             if (fileExists(s)) {
-                Log.d("filePaths", s)
-                detectedResults.add("isMark:$s\n")
-                return 1
+                result++
             }
         }
-        return 0
+        return result
     }
 
     private fun hasAppPackage(context: Context, app: Array<String>): Int {
@@ -367,16 +340,9 @@ class EmulatorDetector : IDetection {
 
 
     override fun isDetected(context: Context): Boolean {
-        var result = 0
-        val timeMillis = measureTimeMillis {
-            result =
-                isMuMu(context) + isNox(context) + isXiaoYao(context)+isAS() + isGenymotion(context)  + normalDetect(
-                    context
-                )
-        }
-        detectedResults.add("timeMillis:$timeMillis \n result: $result\n")
-        Log.d("result", result.toString())
-        return result > 0
+        return isMuMu(context) > 0 || isNox(context) > 0 || isXiaoYao(context) > 0 || isAS() > 0 || isGenymotion(
+            context
+        ) > 0 || normalDetect(context) > 2
     }
 
 
