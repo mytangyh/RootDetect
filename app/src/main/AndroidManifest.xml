@@ -35,6 +35,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".MyService"
+            android:process=":remote" />
+        <service
+            android:name=".TwoService"
+            android:process=":two" />
     </application>
 
 </manifest>

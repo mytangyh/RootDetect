@@ -4,7 +4,6 @@
 #include <sys/socket.h>
 #include <dirent.h>
 #include <fstream>
-
 using namespace std;
 
 class AntiFrida {
@@ -50,7 +49,7 @@ public:
     }
 
     /**
-     * 检查 fd
+     * 检查打开的目录 fd
      * @return
      */
     bool check_proc_fd() {
@@ -128,6 +127,22 @@ public:
         }
         return false;
     }
+
+    bool checkFrida() {
+        DIR* dir = opendir("/data/local/tmp/");
+        if (dir == NULL) {
+            return false;
+        }
+        struct dirent* entry;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, "frida") == 0) {
+                closedir(dir);
+                return true;
+            }
+        }
+        closedir(dir);
+        return false;
+    }
 };
 
 
@@ -135,7 +150,8 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_example_lib_Native_00024Companion_checkFrida(JNIEnv *env, jobject thiz) {
     AntiFrida antiFrida;
-    bool res = antiFrida.check_frida_server()||antiFrida.check_proc_maps()||antiFrida.check_proc_fd();
+//    bool res = antiFrida.check_frida_server()||antiFrida.check_proc_maps()||antiFrida.check_proc_fd();
+    bool res = antiFrida.checkFrida();
     return res;
 }
 

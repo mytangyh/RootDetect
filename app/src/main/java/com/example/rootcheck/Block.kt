@@ -1,208 +1,194 @@
-package com.example.rootcheck;
+package com.example.rootcheck
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.charset.Charset;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.File
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.channels.FileLock
+import java.nio.charset.StandardCharsets
 
 /**
  * Author : Administrator
  * Time : 2024/01/22
  * Desc :
  */
-public class Block {
-    private Map<String, Object> value;
-    private File mFile;
+class Block(private val mFile: File) {
+    private val value: MutableMap<String?, Any?>
+
     //版本id
-    private Integer mId;
-    private RandomAccessFile mAccessFile;
-    private FileChannel mChannel;
+    private var mId: Int? = null
+    private var mAccessFile: RandomAccessFile? = null
+    private var mChannel: FileChannel? = null
 
-    public Block(File file) throws IOException {
-        this.mFile = file;
-        if (!mFile.exists() || !mFile.isFile()) {
-            File dir = mFile.getParentFile();
+    init {
+        if (!mFile.exists() || !mFile.isFile) {
+            val dir = mFile.parentFile
             if (!dir.exists()) {
-                dir.mkdirs();
+                dir.mkdirs()
             }
-            mFile.createNewFile();
+            mFile.createNewFile()
         }
-        value = new HashMap<>();
+        value = HashMap()
     }
 
-    public Map<String, Object> getValue() {
-        sync();
-        return value;
+    fun getValue(): MutableMap<String?, Any?> {
+        sync()
+        return value
     }
 
-    public long getSize() {
-        return mFile.length();
+    val size: Long
+        get() = mFile.length()
+
+    fun write(): Boolean {
+        return doMap2File()
     }
 
-    public boolean write() {
-        return doMap2File();
-    }
-
-    void sync() {
-        ByteBuffer buffer = null;
-        FileLock lock = null;
+    fun sync() {
+        var buffer: ByteBuffer? = null
+        var lock: FileLock? = null
         try {
             //读mid
-            lock = lock(0, 4, true);
-            buffer = ByteBuffer.allocate(4);
-            int size = mChannel.read(buffer, 0);
-            unLock(lock);
+            lock = lock(0, 4, true)
+            buffer = ByteBuffer.allocate(4)
+            val size = mChannel!!.read(buffer, 0)
+            unLock(lock)
             if (size == 4) {
-                buffer.flip();
+                buffer.flip()
                 //比较mid
-                int mid = buffer.getInt();
+                val mid = buffer.getInt()
                 //当前mid为空，没同步过，同步，mid不一致，同步
-                if (Block.this.mId == null || Block.this.mId != mid) {
-                    doFile2Map();
+                if (mId == null || mId != mid) {
+                    doFile2Map()
                     //同步完成，更新mid
-                    Block.this.mId = mid;
+                    mId = mid
                 }
             }
-        } catch (Throwable e) {
+        } catch (e: Throwable) {
             //读取mid出io异常
-            unLock(lock);
-            e.printStackTrace();
+            unLock(lock)
+            e.printStackTrace()
         } finally {
-            if (buffer != null) {
-                buffer.clear();
-            }
+            buffer?.clear()
         }
     }
 
-    private FileLock lock(long position, long size, boolean shared) {
+    private fun lock(position: Long, size: Long, shared: Boolean): FileLock? {
+        var size = size
         try {
-            if (mAccessFile == null || mChannel == null || !mChannel.isOpen()) {
-                mAccessFile = new RandomAccessFile(mFile, "rw");
-                mChannel = mAccessFile.getChannel();
+            if (mAccessFile == null || mChannel == null || !mChannel!!.isOpen) {
+                mAccessFile = RandomAccessFile(mFile, "rw")
+                mChannel = mAccessFile!!.channel
             }
-            if (mChannel != null && mChannel.isOpen()) {
-                size = Math.min(size, mAccessFile.length());
-                return mChannel.lock(position, size, shared);
+            if (mChannel != null && mChannel!!.isOpen) {
+                size = Math.min(size, mAccessFile!!.length())
+                return mChannel!!.lock(position, size, shared)
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
-        return null;
+        return null
     }
 
-    private void unLock(FileLock lock) {
+    private fun unLock(lock: FileLock?) {
+        var lock = lock
         if (lock != null) {
             try {
-                lock.release();
-                release();
-            } catch (IOException e) {
-                e.printStackTrace();
+                lock.release()
+                release()
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-            lock = null;
+            lock = null
         }
     }
 
-    private void release() {
+    private fun release() {
         if (mChannel != null) {
             try {
-                mChannel.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                mChannel!!.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-            mChannel = null;
+            mChannel = null
         }
         if (mAccessFile != null) {
             try {
-                mAccessFile.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                mAccessFile!!.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-            mAccessFile = null;
+            mAccessFile = null
         }
     }
 
-    private void doFile2Map() {
-        FileLock lock = lock(5, Long.MAX_VALUE, true);
+    private fun doFile2Map() {
+        val lock = lock(5, Long.MAX_VALUE, true)
         try {
             //前4位是mid,跳过
-            mChannel.position(4);
-            ByteBuffer buffer = ByteBuffer.allocate((int) (mChannel.size() - 4));
-
-            int len = mChannel.read(buffer);
+            mChannel!!.position(4)
+            val buffer = ByteBuffer.allocate((mChannel!!.size() - 4).toInt())
+            val len = mChannel!!.read(buffer)
             if (len == -1) {
-                return;
+                return
             }
-            buffer.flip();
-            value.clear();
-            JSONObject object = new JSONObject(StandardCharsets.UTF_8.decode(buffer).toString());
-            for (Iterator<String> it = object.keys(); it.hasNext(); ) {
-                String k = it.next();
-                value.put(k, object.get(k));
+            buffer.flip()
+            value.clear()
+            val `object` = JSONObject(StandardCharsets.UTF_8.decode(buffer).toString())
+            val it = `object`.keys()
+            while (it.hasNext()) {
+                val k = it.next()
+                value[k] = `object`[k]
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            unLock(lock);
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: JSONException) {
+            unLock(lock)
             try {
-                mFile.delete();
-            } catch (Exception e1) {
-                e1.printStackTrace();
+                mFile.delete()
+            } catch (e1: Exception) {
+                e1.printStackTrace()
             }
-            e.printStackTrace();
+            e.printStackTrace()
         } finally {
-            unLock(lock);
+            unLock(lock)
         }
     }
 
-    private boolean doMap2File() {
-        boolean result = false;
-        FileLock lock = lock(0, Long.MAX_VALUE, false);
+    private fun doMap2File(): Boolean {
+        var result = false
+        val lock = lock(0, Long.MAX_VALUE, false)
         try {
-            JSONObject object = new JSONObject(value);
-            byte[] bt = object.toString(0).getBytes(StandardCharsets.UTF_8);
-            ByteBuffer buf = ByteBuffer.allocate(bt.length + 4);
-            if (mId == null) {
-                mId = Integer.MIN_VALUE;
+            val `object` = JSONObject(value)
+            val bt = `object`.toString(0).toByteArray(StandardCharsets.UTF_8)
+            val buf = ByteBuffer.allocate(bt.size + 4)
+            mId = if (mId == null) {
+                Int.MIN_VALUE
             } else {
-                mId = (mId + 1) % (Integer.MAX_VALUE - 10);
+                (mId!! + 1) % (Int.MAX_VALUE - 10)
             }
-            buf.putInt(mId);
-            buf.put(bt);
-            buf.flip();
-            mChannel.position(0);
+            buf.putInt(mId!!)
+            buf.put(bt)
+            buf.flip()
+            mChannel!!.position(0)
             while (buf.hasRemaining()) {
-                mChannel.write(buf);
+                mChannel!!.write(buf)
             }
-            mChannel.truncate(4 + bt.length);
-            mChannel.force(true);
-            result = true;
-        } catch (IOException e) {
+            mChannel!!.truncate((4 + bt.size).toLong())
+            mChannel!!.force(true)
+            result = true
+        } catch (e: IOException) {
             //todo 写入文件失败,用备份文件方式处理
-            e.printStackTrace();
-        } catch (JSONException e) {
+            e.printStackTrace()
+        } catch (e: JSONException) {
             //map转json串会出异常?先不处理,最多就是数据存不进去
             //可能map存储了含有特殊字符串的value会有这个异常.
-            e.printStackTrace();
+            e.printStackTrace()
         } finally {
-            unLock(lock);
+            unLock(lock)
         }
-        return result;
+        return result
     }
 }

@@ -1,15 +1,15 @@
 package com.example.rootcheck
 
 import android.annotation.SuppressLint
-import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -17,10 +17,8 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.lib.EmulatorDetector
 import com.example.lib.EmulatorDetectorNew
-import com.example.lib.Hook
 import com.example.lib.HookDetector
-import com.example.lib.Native
-import com.example.lib.RootDetector
+import com.example.lib.LogUtil
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
 import com.tencent.mmkv.MMKV
@@ -58,20 +56,32 @@ class MainActivity : AppCompatActivity() {
 //        MMKVUtils.put("isRooted","isRooted")
         val emulatorDetectorNew = EmulatorDetectorNew()
         var detected = false
+        var checkFrida: Boolean
+        val myServiceIntent = Intent(this@MainActivity, MyService::class.java)
+        startService(myServiceIntent)
+        val twoService = Intent(this, TwoService::class.java)
+        startService(twoService)
         val measureTimeMillis = measureTimeMillis{
-            detected = emulatorDetectorNew.isDetected(this)
+            checkFrida = HookDetector.isDetected()
         }
+        val buildStr="${Build.BOARD} ${Build.DEVICE} ${Build.VERSION.RELEASE} ${Build.MODEL}"
+
+
+
         if (measureTimeMillis>0) {
 
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Root Warning!!")
-            builder.setMessage(measureTimeMillis.toString()+detected)
+            builder.setTitle("checkFrida!!")
+            builder.setMessage("time:$measureTimeMillis frida:$checkFrida build:$buildStr")
             builder.setPositiveButton("确定") { _, _ ->
 //                finish()
             }
             val dialog = builder.create()
             dialog.show()
         }
+//        clip.testSp(this)
+        val sp = clip.testgetSp(this)
+        LogUtil.d("sp:${clip.testgetSp(this)}")
 
 //        mbinding.webview.loadDataWithBaseURL(null,str,"text/html", "utf-8",null)
         mbinding.checkBtn.setOnClickListener {
@@ -84,20 +94,19 @@ class MainActivity : AppCompatActivity() {
             val results = emulatorDetector.getResults()
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
-            val hook = HookDetector()
 //            val str="com.hexin.yuqing"
 //            val appInstalled = isAppInstalled(this, str)
-            val country = getCountry(this)
-            MMKVUtils.put("test", "ssss")
-            val get = MMKVUtils.get<String>("test")
+            val hooktime = measureTimeMillis {
+//                checkFrida = HookDetector.isDetected()
+            }
 
-            val checkFrida = Native.checkFrida()
-//            hook.Procmaps()
+            val sp = clip.testgetSp(this)
 
-            mbinding.resultText.text = "fridaServerRunning:$checkFrida"
+            mbinding.resultText.text = "fridaServerRunning:$checkFrida time:$hooktime \n sp:$sp"
 
 
         }
+
     }
 
     fun isAppInstalled(context: Context, packageName: String): Boolean {
@@ -156,3 +165,5 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+

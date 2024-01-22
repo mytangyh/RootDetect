@@ -1,391 +1,332 @@
-package com.example.rootcheck;
+package com.example.rootcheck
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.util.Log;
-
-import androidx.annotation.Nullable;
-
-import org.json.JSONArray;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
+import android.os.Message
+import android.util.Log
+import com.example.lib.LogUtil
+import org.json.JSONArray
+import java.io.File
+import java.util.LinkedList
+import java.util.Queue
 
 /**
  * Author : Administrator
  * Time : 2024/01/22
  * Desc :
  */
-public class SysnKV implements SharedPreferences {
-
-    private static final String TAG = "SysnKV";
-
-    private static final String DEF_NAME = "sysn_kv";
-    private static final String SUFFIX = ".skv";
+class SysnKV @JvmOverloads constructor(context: Context, name: String = DEF_NAME) :
+    SharedPreferences {
     /**
      * 默认200kb
-     * <p>
+     *
+     *
      * 分块存储文件最大值,超过这个值就加一块
      */
-    private int mMaxBlockSize = 1024 * 10;
-    private final Context context;
+    private val mMaxBlockSize = 1024 * 10
+    private val context: Context
+    private var name = "def_sysnkv"
+    private val mBlockList: ArrayList<Block>
+    private var mEditorQueue: Queue<SharedPreferences.Editor>? = null
+    private var mHandler: Handler? = null
 
-    private String name = "def_sysnkv";
-    private ArrayList<Block> mBlockList;
-
-    private Queue<Editor> mEditorQueue;
-    private Handler mHandler;
-
-
-    public SysnKV(Context context) {
-        this(context, DEF_NAME);
-    }
-    public SysnKV(Context context, String name) {
-        this.name = name;
-        this.context = context;
-        mBlockList = new ArrayList<>();
+    init {
+        this.name = name
+        this.context = context
+        mBlockList = ArrayList()
         try {
-            for (int i = 0; ; i++) {
-                String path = getBlockFile(context, name, i);
-                File blockFile = new File(path);
-                if (blockFile.exists() && blockFile.isFile()) {
-                    Block block = new Block(blockFile);
-                    mBlockList.add(block);
-
+            var i = 0
+            while (true) {
+                val path = getBlockFile(context, name, i)
+                val blockFile = File(path)
+                if (blockFile.exists() && blockFile.isFile) {
+                    val block = Block(blockFile)
+                    mBlockList.add(block)
                 } else {
-                    break;
+                    break
                 }
+                i++
             }
-
             if (mBlockList.isEmpty()) {
-                String path = getBlockFile(context, name, mBlockList.size());
-                Block block = new Block(new File(path));
-                mBlockList.add(block);
+                val path = getBlockFile(context, name, mBlockList.size)
+                val block = Block(File(path))
+                mBlockList.add(block)
             }
-
-            mEditorQueue = new LinkedList<>();
-            HandlerThread thread = new HandlerThread("SysnKV");
-            thread.start();
-            mHandler = new Handler(thread.getLooper(), new Work());
-        } catch (Throwable e) {
+            mEditorQueue = LinkedList()
+            val thread = HandlerThread("SysnKV")
+            thread.start()
+            mHandler = Handler(thread.looper, Work())
+        } catch (e: Throwable) {
             //1.文件禁止访问
             //2.无法创建文件
-            e.printStackTrace();
+            e.printStackTrace()
         }
     }
-    private String getBlockFile(Context context, String name, int num) {
-        String dir = context.getExternalFilesDir(null).getAbsolutePath().concat(File.separator).concat("testSysnP/");
-//        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath()
-//                .concat(File.separator).concat("testSysnP/");
-        return dir.concat(name).concat(String.valueOf(num)).concat(name.indexOf('.') != -1 ? "" : SUFFIX);
+
+    private fun getBlockFile(context: Context, name: String, num: Int): String {
+        val dir = context.getExternalFilesDir(null)!!.absolutePath + File.separator + "testSysnP/"
+        return dir + name + num.toString() + if (name.indexOf('.') != -1) "" else SUFFIX
     }
 
-    @Override
-    public Map<String, ?> getAll() {
-        Map<String, Object> mValue = new HashMap<>();
-        for (Block block : mBlockList) {
-            mValue.putAll(block.getValue());
+    override fun getAll(): Map<String?, *> {
+        val mValue: MutableMap<String?, Any?> = HashMap()
+        for (block in mBlockList) {
+            mValue.putAll(block.getValue())
         }
-        return mValue;
+        return mValue
     }
 
-    @Nullable
-    @Override
-    public String getString(String key, @Nullable String defValue) {
+    override fun getString(key: String, defValue: String?): String? {
         try {
-            for (Block block : mBlockList) {
-                String o = (String) block.getValue().get(key);
+            for (block in mBlockList) {
+                val o = block.getValue()[key] as String?
                 if (o != null) {
-                    return o;
+                    return o
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        return defValue;
+        return defValue
     }
 
-    @Nullable
-    @Override
-    public Set<String> getStringSet(String key, @Nullable Set<String> defValues) {
+    override fun getStringSet(key: String, defValues: Set<String>?): Set<String>? {
         try {
-            for (Block block : mBlockList) {
-                Object array = block.getValue().get(key);
+            for (block in mBlockList) {
+                val array = block.getValue()[key]
                 //hashmap 存完了json解析出来是jsonarray
-                if (array instanceof Set) {
-                    return (Set<String>) array;
-                } else if (array instanceof JSONArray) {
+                if (array is Set<*>) {
+                    return array as Set<String>?
+                } else if (array is JSONArray) {
                     if (array == null) {
-                        return defValues;
+                        return defValues
                     }
-                    JSONArray jsonArray = (JSONArray) array;
-                    Set<String> strings;
-                    strings = new HashSet<>();
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        strings.add((String) jsonArray.opt(i));
+                    val jsonArray = array
+                    val strings: MutableSet<String>
+                    strings = HashSet()
+                    for (i in 0 until jsonArray.length()) {
+                        strings.add(jsonArray.opt(i) as String)
                     }
-                    return strings;
-                }
-
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return defValues;
-    }
-
-    @Override
-    public int getInt(String key, int defValue) {
-        try {
-            for (Block block : mBlockList) {
-                Object val = block.getValue().get(key);
-                if (val != null) {
-                    return (int) val;
+                    return strings
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        return defValue;
+        return defValues
     }
 
-    @Override
-    public long getLong(String key, long defValue) {
+    override fun getInt(key: String, defValue: Int): Int {
         try {
-            for (Block block : mBlockList) {
-                Object val = block.getValue().get(key);
-                if (val != null) {
-                    if (val instanceof Integer) {
-                        return (int) val;
+            for (block in mBlockList) {
+                val value = block.getValue()[key]
+                if (value != null) {
+                    return value as Int
+                }
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        return defValue
+    }
+
+    override fun getLong(key: String, defValue: Long): Long {
+        try {
+            for (block in mBlockList) {
+                val value = block.getValue()[key]
+                if (value != null) {
+                    return if (value is Int) {
+                        value.toLong()
                     } else {
-                        return (long) val;
+                        value as Long
                     }
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        return defValue;
+        return defValue
     }
 
-    @Override
-    public float getFloat(String key, float defValue) {
+    override fun getFloat(key: String, defValue: Float): Float {
         try {
-            for (Block block : mBlockList) {
-                Object val = block.getValue().get(key);
-                if (val != null) {
-                    if (val instanceof Double) {
-                        double d = (double) val;
-                        return (float) d;
+            for (block in mBlockList) {
+                val value = block.getValue()[key]
+                if (value != null) {
+                    return if (value is Double) {
+                        value.toFloat()
                     } else {
-                        return (float) val;
+                        value as Float
                     }
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        return defValue;
+        return defValue
     }
 
-    @Override
-    public boolean getBoolean(String key, boolean defValue) {
+    override fun getBoolean(key: String, defValue: Boolean): Boolean {
         try {
-            for (Block block : mBlockList) {
-                Object val = block.getValue().get(key);
-                if (val != null) {
-                    return (boolean) val;
+            for (block in mBlockList) {
+                val value = block.getValue()[key]
+                if (value != null) {
+                    return value as Boolean
                 }
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
-        return defValue;
+        return defValue
     }
 
-    @Override
-    public boolean contains(String key) {
-        for (Block block : mBlockList) {
-            Object o = block.getValue().get(key);
+    override fun contains(key: String): Boolean {
+        for (block in mBlockList) {
+            val o = block.getValue()[key]
             if (o != null) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    @Override
-    public Editor edit() {
-        return new EditorImpl();
+    override fun edit(): SharedPreferences.Editor {
+        return EditorImpl()
     }
 
-    @Override
-    public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-
-    }
-
-    @Override
-    public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-
-    }
-    final static class Work implements Handler.Callback {
-
-        public final static int WHAT_APPLY = 1;
-        public final static int WHAT_INIT_SYSN = 2;
-
-        @Override
-        public boolean handleMessage(Message msg) {
-            switch (msg.what) {
-                case WHAT_APPLY:
-                    Queue<Editor> queue = null;
-                    if (msg.obj instanceof Queue) {
-                        queue = (Queue<Editor>) msg.obj;
+    override fun registerOnSharedPreferenceChangeListener(listener: OnSharedPreferenceChangeListener) {}
+    override fun unregisterOnSharedPreferenceChangeListener(listener: OnSharedPreferenceChangeListener) {}
+    internal class Work : Handler.Callback {
+        override fun handleMessage(msg: Message): Boolean {
+            when (msg.what) {
+                WHAT_APPLY -> {
+                    var queue: Queue<SharedPreferences.Editor>? = null
+                    if (msg.obj is Queue<*>) {
+                        queue = msg.obj as? Queue<SharedPreferences.Editor>
                     }
-                    if (queue == null) {
-                        break;
-                    }
-                    while (!queue.isEmpty()) {
-                        Editor editor = queue.poll();
-                        editor.commit();
-                    }
-                    break;
-                case WHAT_INIT_SYSN:
+                    queue?.forEach { it?.commit() }
+                }
 
-                    break;
-                default:
-                    break;
+                WHAT_INIT_SYSN -> {}
+                else -> {}
             }
-            return true;
+            return true
+        }
+
+        companion object {
+            const val WHAT_APPLY = 1
+            const val WHAT_INIT_SYSN = 2
         }
     }
-    final class EditorImpl implements Editor {
-        Map<String, Object> addMap = new HashMap<>();
-        Set<String> deleteKey = new HashSet<>();
-        boolean isClear;
 
-        @Override
-        public Editor putString(String key, String value) {
-            addMap.put(key, value);
-            return this;
+    internal inner class EditorImpl : SharedPreferences.Editor {
+        var addMap: MutableMap<String, Any?> = HashMap()
+        var deleteKey: MutableSet<String> = HashSet()
+        var isClear = false
+        override fun putString(key: String, value: String?): SharedPreferences.Editor {
+            addMap[key] = value
+            return this
         }
 
-        @Override
-        public Editor putStringSet(String key, Set<String> values) {
-            addMap.put(key, values);
-            return this;
+        override fun putStringSet(key: String, values: Set<String>?): SharedPreferences.Editor {
+            addMap[key] = values
+            return this
         }
 
-        @Override
-        public Editor putInt(String key, int value) {
-            addMap.put(key, value);
-            return this;
+        override fun putInt(key: String, value: Int): SharedPreferences.Editor {
+            addMap[key] = value
+            return this
         }
 
-        @Override
-        public Editor putLong(String key, long value) {
-            addMap.put(key, value);
-            return this;
+        override fun putLong(key: String, value: Long): SharedPreferences.Editor {
+            addMap[key] = value
+            return this
         }
 
-        @Override
-        public Editor putFloat(String key, float value) {
-            addMap.put(key, value);
-            return this;
+        override fun putFloat(key: String, value: Float): SharedPreferences.Editor {
+            addMap[key] = value
+            return this
         }
 
-        @Override
-        public Editor putBoolean(String key, boolean value) {
-            addMap.put(key, value);
-            return this;
+        override fun putBoolean(key: String, value: Boolean): SharedPreferences.Editor {
+            addMap[key] = value
+            return this
         }
 
-        @Override
-        public Editor remove(String key) {
-            deleteKey.add(key);
-            addMap.remove(key);
-            return this;
+        override fun remove(key: String): SharedPreferences.Editor {
+            deleteKey.add(key)
+            addMap.remove(key)
+            return this
         }
 
-        @Override
-        public Editor clear() {
-            isClear = true;
-            deleteKey.clear();
-            addMap.clear();
-            return this;
+        override fun clear(): SharedPreferences.Editor {
+            isClear = true
+            deleteKey.clear()
+            addMap.clear()
+            return this
         }
 
-        @Override
-        public boolean commit() {
-            if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
+        override fun commit(): Boolean {
+            if (Thread.currentThread() === Looper.getMainLooper().thread) {
                 //在主线程操作可能会因为等待文件锁anr
-                Log.w(TAG, "在主线程操作,最好使用apply防止ANR");
+                Log.w(TAG, "在主线程操作,最好使用apply防止ANR")
             }
-            boolean result = false;
-
+            var result = false
             try {
-
-                for (int i = 0; i < mBlockList.size(); i++) {
-                    boolean isMdf = false;
-
-                    Block block = mBlockList.get(i);
+                for (i in mBlockList.indices) {
+                    var isMdf = false
+                    val block = mBlockList[i]
                     if (isClear) {
-                        block.getValue().clear();
-                        isMdf = true;
+                        block.getValue().clear()
+                        isMdf = true
                     } else {
-                        for (String key : deleteKey) {
-                            block.sync();
-                            Object value = block.getValue().remove(key);
+                        for (key in deleteKey) {
+                            block.sync()
+                            val value: Any? = block.getValue().remove(key)
                             if (value != null) {
-                                deleteKey.remove(key);
-                                isMdf = true;
+                                deleteKey.remove(key)
+                                isMdf = true
                             }
                         }
-                        if (block.getSize() > mMaxBlockSize) {
-                            continue;
+                        if (block.size > mMaxBlockSize) {
+                            continue
                         }
-
                     }
-                    if (!addMap.isEmpty() && block.getSize() < mMaxBlockSize) {
-                        block.getValue().putAll(addMap);
-                        addMap.clear();
-                        isMdf = true;
+                    if (addMap.isNotEmpty() && block.size < mMaxBlockSize) {
+                        block.getValue().putAll(addMap)
+                        addMap.clear()
+                        isMdf = true
                     }
                     if (isMdf) {
-                        result = block.write();
+                        result = block.write()
                     }
                 }
-
-                if (!addMap.isEmpty()) {
-                    String path = getBlockFile(context, name, mBlockList.size());
-                    Block block = new Block(new File(path));
-                    mBlockList.add(block);
-                    block.getValue().putAll(addMap);
-                    result = block.write();
+                if (addMap.isNotEmpty()) {
+                    val path = getBlockFile(context, name, mBlockList.size)
+                    val block = Block(File(path))
+                    mBlockList.add(block)
+                    block.getValue().putAll(addMap)
+                    result = block.write()
                 }
-
-
-            } catch (Throwable e) {
-                e.printStackTrace();
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
-
-            return result;
+            return result
         }
 
-        @Override
-        public void apply() {
-            SysnKV.this.mEditorQueue.add(this);
-            Message.obtain(SysnKV.this.mHandler, Work.WHAT_APPLY, SysnKV.this.mEditorQueue);
+        override fun apply() {
+            mEditorQueue?.add(this)
+            Message.obtain(mHandler, Work.WHAT_APPLY, mEditorQueue)
         }
+    }
+
+    companion object {
+        private const val TAG = "SysnKV"
+        private const val DEF_NAME = "sysn_kv"
+        private const val SUFFIX = ".skv"
     }
 }

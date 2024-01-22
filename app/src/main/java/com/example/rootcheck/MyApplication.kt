@@ -5,12 +5,15 @@ import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 
 class MyApplication : Application() {
     var isAppInForeground = false
     override fun onCreate() {
         super.onCreate()
+
+
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 // 应用启动
