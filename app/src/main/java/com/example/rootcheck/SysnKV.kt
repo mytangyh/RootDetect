@@ -68,7 +68,8 @@ class SysnKV @JvmOverloads constructor(context: Context, name: String = DEF_NAME
     }
 
     private fun getBlockFile(context: Context, name: String, num: Int): String {
-        val dir = context.getExternalFilesDir(null)!!.absolutePath + File.separator + "testSysnP/"
+        val dir = context.filesDir.absolutePath + File.separator + "testSysnP/"
+//        LogUtil.d(dir)
         return dir + name + num.toString() + if (name.indexOf('.') != -1) "" else SUFFIX
     }
 

@@ -12,12 +12,19 @@ class TwoService:Service() {
     private val TAG = "TwoService"
 
     override fun onCreate() {
-        Log.e(TAG, "onCreate ${clip.testgetSp(this)}")
-//        clip.testSp(this)
+        var i = 1
+        while (i < 10) {
+            Log.e(TAG, "onCreate ${clip.testgetSp(this)}")
+            i++
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e(TAG, "onStartCommand: ${clip.testgetSp(this)}")
+        var i = 1
+        while (i < 10) {
+            Log.e(TAG, "onStartCommand ${clip.testgetSp(this)}")
+            i++
+        }
         return START_STICKY
     }
 

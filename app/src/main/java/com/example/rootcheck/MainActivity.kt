@@ -29,11 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mbinding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        MMKV.initialize(this)
-        if (!MMKVUtils.getString("first").equals("first")) {
-            MMKVUtils.saveString("first", "first")
-            Log.d("TAG", "onCreate: first")
-        }
+
 
         mbinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mbinding.root)
@@ -64,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         val measureTimeMillis = measureTimeMillis{
             checkFrida = HookDetector.isDetected()
         }
-        val buildStr="${Build.BOARD} ${Build.DEVICE} ${Build.VERSION.RELEASE} ${Build.MODEL}"
+        val buildStr="\nBRAND:${Build.BRAND} \nDEVICE:${Build.DEVICE} \nRELEASE:${Build.VERSION.RELEASE} \nMODEL:${Build.MODEL}"
 
 
 
@@ -72,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("checkFrida!!")
-            builder.setMessage("time:$measureTimeMillis frida:$checkFrida build:$buildStr")
+            builder.setMessage("time:$measureTimeMillis frida:$checkFrida \nbuild:$buildStr")
             builder.setPositiveButton("确定") { _, _ ->
 //                finish()
             }
@@ -80,7 +76,6 @@ class MainActivity : AppCompatActivity() {
             dialog.show()
         }
 //        clip.testSp(this)
-        val sp = clip.testgetSp(this)
         LogUtil.d("sp:${clip.testgetSp(this)}")
 
 //        mbinding.webview.loadDataWithBaseURL(null,str,"text/html", "utf-8",null)

@@ -28,12 +28,14 @@ object clip {
     fun testgetSp(context: Context):String{
         val sysnKV = SysnKV(context,"test")
         val toString = sysnKV.getString("build", "").toString()
-        if (toString.isEmpty()){
+        if (toString.isNotEmpty()){
             num++
             val sysnKV = SysnKV(context,"test")
             val editorImpl = sysnKV.EditorImpl()
             editorImpl.putString("build", num.toString())
             editorImpl.commit()
+        }else {
+            num =-1
         }
         return sysnKV.getString("build", "").toString()
     }

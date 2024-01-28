@@ -53,7 +53,7 @@ class Block(private val mFile: File) {
             //读mid
             lock = lock(0, 4, true)
             buffer = ByteBuffer.allocate(4)
-            val size = mChannel!!.read(buffer, 0)
+            val size = mChannel?.read(buffer, 0)
             unLock(lock)
             if (size == 4) {
                 buffer.flip()
@@ -80,11 +80,11 @@ class Block(private val mFile: File) {
         try {
             if (mAccessFile == null || mChannel == null || !mChannel!!.isOpen) {
                 mAccessFile = RandomAccessFile(mFile, "rw")
-                mChannel = mAccessFile!!.channel
+                mChannel = mAccessFile?.channel
             }
             if (mChannel != null && mChannel!!.isOpen) {
                 size = Math.min(size, mAccessFile!!.length())
-                return mChannel!!.lock(position, size, shared)
+                return mChannel?.lock(position, size, shared)
             }
         } catch (e: IOException) {
             e.printStackTrace()
@@ -108,7 +108,7 @@ class Block(private val mFile: File) {
     private fun release() {
         if (mChannel != null) {
             try {
-                mChannel!!.close()
+                mChannel?.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -116,7 +116,7 @@ class Block(private val mFile: File) {
         }
         if (mAccessFile != null) {
             try {
-                mAccessFile!!.close()
+                mAccessFile?.close()
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -128,9 +128,9 @@ class Block(private val mFile: File) {
         val lock = lock(5, Long.MAX_VALUE, true)
         try {
             //前4位是mid,跳过
-            mChannel!!.position(4)
+            mChannel?.position(4)
             val buffer = ByteBuffer.allocate((mChannel!!.size() - 4).toInt())
-            val len = mChannel!!.read(buffer)
+            val len = mChannel?.read(buffer)
             if (len == -1) {
                 return
             }
