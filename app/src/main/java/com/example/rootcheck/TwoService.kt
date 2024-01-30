@@ -13,16 +13,20 @@ class TwoService:Service() {
 
     override fun onCreate() {
         var i = 1
-        while (i < 10) {
-            Log.e(TAG, "onCreate ${clip.testgetSp(this)}")
+        while (i < 50) {
+            Thread.sleep(82)
+            Log.d(TAG, "onCreate SP $i : ${SpTest.testSp()}")
+
             i++
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         var i = 1
-        while (i < 10) {
-            Log.e(TAG, "onStartCommand ${clip.testgetSp(this)}")
+        while (i < 50) {
+            Thread.sleep(20)
+            Log.d(TAG, "onStartCommand SP$i : ${SpTest.testSp()}")
+
             i++
         }
         return START_STICKY

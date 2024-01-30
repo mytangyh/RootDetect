@@ -12,8 +12,10 @@ class MyService:Service() {
 
     override fun onCreate() {
         var i = 1
-        while (i < 10) {
-            Log.e(TAG, "onCreate ${clip.testgetSp(this)}")
+        while (i < 50) {
+            val testSp = SpTest.testSp()
+            Thread.sleep(80)
+            Log.d(TAG, "onCreate SP $i :${testSp}")
             i++
         }
 //        clip.testSp(this)
@@ -21,8 +23,10 @@ class MyService:Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         var i = 1
-        while (i < 10) {
-            Log.e(TAG, "onStartCommand ${clip.testgetSp(this)}")
+        while (i < 50) {
+            Thread.sleep(10)
+            Log.d(TAG, "onStartCommand SP $i :${SpTest.testSp()}")
+
             i++
         }
         return START_STICKY

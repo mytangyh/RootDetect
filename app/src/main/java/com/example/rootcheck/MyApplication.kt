@@ -12,8 +12,9 @@ class MyApplication : Application() {
     var isAppInForeground = false
     override fun onCreate() {
         super.onCreate()
-
-
+        instance = this
+        val myServiceIntent = Intent(this, MyService::class.java)
+        startService(myServiceIntent)
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
                 // 应用启动
@@ -55,5 +56,12 @@ class MyApplication : Application() {
             }
         }
         return false
+    }
+    companion object {
+        private lateinit var instance:Application
+
+        fun applicationContext() : Context {
+            return instance.applicationContext
+        }
     }
 }

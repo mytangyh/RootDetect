@@ -22,11 +22,13 @@ import com.example.lib.LogUtil
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
 import com.tencent.mmkv.MMKV
+import java.lang.Thread.sleep
 import kotlin.system.measureTimeMillis
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mbinding: ActivityMainBinding
+    private var TAG = "MainActivity"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -41,6 +43,18 @@ class MainActivity : AppCompatActivity() {
                 1 -> tab.text = "Tab 2"
             }
         }.attach()
+                val myServiceIntent = Intent(this@MainActivity, MyService::class.java)
+        startService(myServiceIntent)
+        val twoService = Intent(this, TwoService::class.java)
+        startService(twoService)
+        var i = 1
+        while (i < 40) {
+            sleep(100)
+            Log.e(TAG, "MainActivity SP $i : ${SpTest.testSp()}")
+
+            i++
+        }
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -53,28 +67,25 @@ class MainActivity : AppCompatActivity() {
         val emulatorDetectorNew = EmulatorDetectorNew()
         var detected = false
         var checkFrida: Boolean
-        val myServiceIntent = Intent(this@MainActivity, MyService::class.java)
-        startService(myServiceIntent)
-        val twoService = Intent(this, TwoService::class.java)
-        startService(twoService)
-        val measureTimeMillis = measureTimeMillis{
-            checkFrida = HookDetector.isDetected()
-        }
+
+//        val measureTimeMillis = measureTimeMillis{
+//            checkFrida = HookDetector.isDetected()
+//        }
         val buildStr="\nBRAND:${Build.BRAND} \nDEVICE:${Build.DEVICE} \nRELEASE:${Build.VERSION.RELEASE} \nMODEL:${Build.MODEL}"
 
 
 
-        if (measureTimeMillis>0) {
-
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("checkFrida!!")
-            builder.setMessage("time:$measureTimeMillis frida:$checkFrida \nbuild:$buildStr")
-            builder.setPositiveButton("确定") { _, _ ->
-//                finish()
-            }
-            val dialog = builder.create()
-            dialog.show()
-        }
+//        if (measureTimeMillis>0) {
+//
+//            val builder = AlertDialog.Builder(this)
+//            builder.setTitle("checkFrida!!")
+//            builder.setMessage("time:$measureTimeMillis frida:$checkFrida \nbuild:$buildStr")
+//            builder.setPositiveButton("确定") { _, _ ->
+////                finish()
+//            }
+//            val dialog = builder.create()
+//            dialog.show()
+//        }
 //        clip.testSp(this)
         LogUtil.d("sp:${clip.testgetSp(this)}")
 
@@ -84,20 +95,21 @@ class MainActivity : AppCompatActivity() {
 
 //            val isRooted = rootDetection.isDetected()
 //            val results = rootDetection.getResults()
-            val emulatorDetector = EmulatorDetector()
-            val detected = emulatorDetector.isDetected(this)
-            val results = emulatorDetector.getResults()
 //            var distinguishVM = Emulator.instance?.distinguishVM(baseContext, 1)
 //            mbinding.resultText.text = "Is Rooted: " + isRooted + "\nresults: " + results + "\n " + distinguishVM.toString()
 //            val str="com.hexin.yuqing"
 //            val appInstalled = isAppInstalled(this, str)
-            val hooktime = measureTimeMillis {
-//                checkFrida = HookDetector.isDetected()
+
+
+//            val sp = clip.testgetSp(this)
+            var i = 1
+            while (i < 50) {
+                Log.d(TAG, "click SP $i : ${SpTest.testSp()}")
+
+                i++
             }
 
-            val sp = clip.testgetSp(this)
-
-            mbinding.resultText.text = "fridaServerRunning:$checkFrida time:$hooktime \n sp:$sp"
+            mbinding.resultText.text = "fridaServerRunning:$ time:$ \n sp:$"
 
 
         }
