@@ -3,6 +3,7 @@ package com.example.lib
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import androidx.annotation.RequiresPermission
 import java.net.NetworkInterface
 import java.net.SocketException
 
@@ -17,6 +18,8 @@ class ProxyDetector {
          * @param context 应用程序上下文。
          * @return 如果检测到代理则返回true，否则返回false。
          */
+        @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
+
         fun isDetected(context: Context): Boolean {
             return checkHttpProxy() || isVpnConnected(context) || isDeviceInVPN()
         }
@@ -34,6 +37,8 @@ class ProxyDetector {
          * @param context 应用程序上下文。
          * @return 如果连接了VPN则返回true，否则返回false。
          */
+        @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
+
         private fun isVpnConnected(context: Context): Boolean {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val network = cm.activeNetwork ?: return false
