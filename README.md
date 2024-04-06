@@ -44,3 +44,5 @@ We welcome contributions to enhance the Android Security Toolkit.
 If you have any questions, encounter issues, or want to contribute, feel free to [open an issue](https://github.com/your-username/AndroidSecurityToolkit/issues) or contact us.
 
 Thank you for supporting open-source security initiatives!
+
+-----
