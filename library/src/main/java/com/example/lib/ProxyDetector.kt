@@ -3,6 +3,7 @@ package com.example.lib
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.annotation.RequiresPermission
 import java.net.NetworkInterface
 import java.net.SocketException
@@ -21,6 +22,7 @@ class ProxyDetector {
         @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
 
         fun isDetected(context: Context): Boolean {
+            LogUtil.d("checkHttpProxy:${checkHttpProxy()}\nisVpnConnected${isVpnConnected(context)}\nisDeviceInVPN:${isDeviceInVPN()}")
             return checkHttpProxy() || isVpnConnected(context) || isDeviceInVPN()
         }
 
@@ -39,12 +41,17 @@ class ProxyDetector {
          */
         @RequiresPermission(android.Manifest.permission.ACCESS_NETWORK_STATE)
 
-        private fun isVpnConnected(context: Context): Boolean {
+        fun isVpnConnected(context: Context): Boolean {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val network = cm.activeNetwork ?: return false
-            val capabilities = cm.getNetworkCapabilities(network) ?: return false
-            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                cm.activeNetwork?.let { network ->
+                    cm.getNetworkCapabilities(network)?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) ?: false
+                } ?: false
+            } else {
+                cm.activeNetworkInfo?.type == ConnectivityManager.TYPE_VPN
+            }
         }
+
 
         /**
          * 检查设备是否在VPN中。
@@ -52,7 +59,7 @@ class ProxyDetector {
          * @return 如果设备在VPN中则返回true，否则返回false。
          */
         private fun isDeviceInVPN() = try {
-            NetworkInterface.getNetworkInterfaces().asSequence().any { it.name in listOf("tun0", "ppp0") }
+            NetworkInterface.getNetworkInterfaces()?.asSequence()?.any { it.name in listOf("tun0", "ppp0") }==true
         } catch (e: SocketException) {
             false
         }
