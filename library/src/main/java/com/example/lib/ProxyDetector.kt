@@ -31,7 +31,7 @@ class ProxyDetector {
          *
          * @return 如果设置了HTTP代理则返回true，否则返回false。
          */
-        private fun checkHttpProxy() = System.getProperty("http.proxyHost")?.isNotEmpty() == true && System.getProperty("http.proxyPort")?.isNotEmpty() == true
+        fun checkHttpProxy() = System.getProperty("http.proxyHost")?.isNotEmpty() == true && System.getProperty("http.proxyPort")?.isNotEmpty() == true
 
         /**
          * 检查设备是否连接了VPN。
@@ -58,7 +58,7 @@ class ProxyDetector {
          *
          * @return 如果设备在VPN中则返回true，否则返回false。
          */
-        private fun isDeviceInVPN() = try {
+        fun isDeviceInVPN() = try {
             NetworkInterface.getNetworkInterfaces()?.asSequence()?.any { it.name in listOf("tun0", "ppp0") }==true
         } catch (e: SocketException) {
             false

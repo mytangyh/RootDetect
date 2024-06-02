@@ -13,8 +13,8 @@
     </queries>
 
     <application
-        android:allowBackup="true"
         android:name=".MyApplication"
+        android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -24,7 +24,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.com.example.lib.RootCheck"
         tools:targetApi="31">
-
+        <activity
+            android:name=".TabLayoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SecurityActivity"
+            android:exported="false" />
         <activity
             android:name=".TestActivity"
             android:exported="false" />
@@ -37,6 +42,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".MyService"
             android:process=":remote" />
