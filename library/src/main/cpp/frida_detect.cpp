@@ -39,7 +39,7 @@ public:
         string line;
 
         while (getline(maps, line)) {
-            if (line.find("frida") != string::npos) {
+            if (line.find("frida") != string::npos||line.find("XposedBridge") != string::npos) {
                 maps.close();
                 return true;
             }

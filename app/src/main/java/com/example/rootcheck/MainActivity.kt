@@ -2,28 +2,23 @@ package com.example.rootcheck
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.text.method.PasswordTransformationMethod
-import android.util.Log
 import android.view.View
-import androidx.appcompat.app.AlertDialog
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.lib.EmulatorDetector
 import com.example.lib.EmulatorDetectorNew
 import com.example.lib.HookDetector
 import com.example.lib.LogUtil
+import com.example.lib.ProxyDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayoutMediator
-import com.tencent.mmkv.MMKV
-import java.lang.Thread.sleep
-import kotlin.system.measureTimeMillis
 
 
 class MainActivity : AppCompatActivity() {
@@ -43,17 +38,17 @@ class MainActivity : AppCompatActivity() {
                 1 -> tab.text = "Tab 2"
             }
         }.attach()
-                val myServiceIntent = Intent(this@MainActivity, MyService::class.java)
-        startService(myServiceIntent)
-        val twoService = Intent(this, TwoService::class.java)
-        startService(twoService)
-        var i = 1
-        while (i < 40) {
-            sleep(100)
-            Log.e(TAG, "MainActivity SP $i : ${SpTest.testSp()}")
-
-            i++
-        }
+//                val myServiceIntent = Intent(this@MainActivity, MyService::class.java)
+//        startService(myServiceIntent)
+//        val twoService = Intent(this, TwoService::class.java)
+//        startService(twoService)
+//        var i = 1
+//        while (i < 40) {
+//            sleep(100)
+//            Log.e(TAG, "MainActivity SP $i : ${SpTest.testSp()}")
+//
+//            i++
+//        }
 
     }
 
@@ -102,20 +97,34 @@ class MainActivity : AppCompatActivity() {
 
 
 //            val sp = clip.testgetSp(this)
-            var i = 1
-            while (i < 50) {
-                Log.d(TAG, "click SP $i : ${SpTest.testSp()}")
+//            var i = 1
+//            while (i < 50) {
+//                Log.d(TAG, "click SP $i : ${SpTest.testSp()}")
+//
+//                i++
+//            }
+            val xposedExists = HookDetector.isXposedExists()
+            val eposedExistByThrow = HookDetector.isEposedExistByThrow()
+            val tryShutdownXposed = HookDetector.tryShutdownXposed()
+            val classCheck = HookDetector.classCheck()
+            val exceptionCheck = HookDetector.exceptionCheck()
+            Toast.makeText(this, toastMessage(), Toast.LENGTH_SHORT).show()
 
-                i++
-            }
+//            val checkHttpProxy = ProxyDetector.checkHttpProxy()
+//            val vpnConnected1 = ProxyDetector.isVpnConnected(this)
+//            val deviceInVPN = ProxyDetector.isDeviceInVPN()
 
-            mbinding.resultText.text = "fridaServerRunning:$ time:$ \n sp:$"
+            val showText = "getCountry:${getCountry(this).also { LogUtil.d(it) }}\n getNetName:${getNetName(this)}"
+            mbinding.resultText.text = "proxy:${ProxyDetector.isDetected(this)}\n showText\n:$showText"
+
 
 
         }
 
     }
-
+    private fun toastMessage(): String {
+        return "我未被劫持"
+    }
     fun isAppInstalled(context: Context, packageName: String): Boolean {
         val pm = context.packageManager
         return try {
@@ -131,6 +140,11 @@ class MainActivity : AppCompatActivity() {
         val tm = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
 
         return tm.networkCountryIso
+    }
+    private fun getNetName(context: Context): String {
+        val tm = context.getSystemService(TELEPHONY_SERVICE) as TelephonyManager
+
+        return tm.simOperatorName
     }
 
     class MyPagerAdapter(fragmentActivity: FragmentActivity) :
