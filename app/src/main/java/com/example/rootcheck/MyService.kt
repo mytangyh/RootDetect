@@ -4,7 +4,6 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import kotlin.concurrent.thread
 
 
 class MyService:Service() {
@@ -12,23 +11,23 @@ class MyService:Service() {
 
     override fun onCreate() {
         var i = 1
-        while (i < 50) {
-            val testSp = SpTest.testSp()
-            Thread.sleep(80)
-            Log.d(TAG, "onCreate SP $i :${testSp}")
-            i++
-        }
+//        while (i < 50) {
+//            val testSp = SpTest.testSp()
+//            Thread.sleep(80)
+//            Log.d(TAG, "onCreate SP $i :${testSp}")
+//            i++
+//        }
 //        clip.testSp(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         var i = 1
-        while (i < 50) {
-            Thread.sleep(10)
-            Log.d(TAG, "onStartCommand SP $i :${SpTest.testSp()}")
-
-            i++
-        }
+//        while (i < 50) {
+//            Thread.sleep(10)
+//            Log.d(TAG, "onStartCommand SP $i :${SpTest.testSp()}")
+//
+//            i++
+//        }
         return START_STICKY
     }
 

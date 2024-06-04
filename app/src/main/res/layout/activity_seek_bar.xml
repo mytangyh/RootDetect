@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SeekBar">
+
+    <com.example.rootcheck.ui.TextSeekBar
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        app:backgroundProgressBarColor="#FAB282"
+        app:backgroundProgressBarEndColor="#FB6501"
+        app:backgroundProgressBarHeight="8dp"
+        app:backgroundProgressBarStartColor="#FFE8D9"
+        app:headEndPadding="-7dp"
+        app:progress="40"
+        app:prospectProgressBarColor="#B18BF4"
+        app:prospectProgressBarEndColor="#630DFB"
+        app:prospectProgressBarHeight="8dp"
+        app:prospectProgressBarStartColor="#F6F1FF"
+        app:thumbBackgroundColor="#798EFF"
+        app:thumbBorderColor="#D5C9F1"
+        app:thumbBorderWidth="4dp"
+        app:thumbHeight="25dp"
+        app:thumbText="这里是文字"
+        app:thumbTextColor="#ffffff"
+        app:thumbTextSize="18sp"
+        app:thumbType="round" />
+
+
+
+</LinearLayout>

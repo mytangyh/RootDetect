@@ -18,6 +18,12 @@
         android:layout_height="wrap_content"
         android:text="towTabDemo" />
 
+    <Button
+        android:id="@+id/dialogBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="dialogBtn" />
+
     <EditText
         android:hint="password"
         android:inputType="textPassword"
@@ -30,7 +36,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <include
+        android:id="@+id/progress_bar_layout"
+        layout="@layout/progress_bar_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
+<!--    <SeekBar-->
+<!--        android:id="@+id/progressSeekBar"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:progressDrawable="@drawable/progress_drawable"-->
+<!--        android:thumb="@drawable/custom_progress_text_background"-->
+<!--        android:max="100"-->
+<!--        android:progress="42"-->
+
+<!--        />-->
 
 
 </LinearLayout>

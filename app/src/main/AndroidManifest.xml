@@ -25,6 +25,9 @@
         android:theme="@style/Theme.com.example.lib.RootCheck"
         tools:targetApi="31">
         <activity
+            android:name=".SeekBar"
+            android:exported="false" />
+        <activity
             android:name=".TabLayoutActivity"
             android:exported="false" />
         <activity
