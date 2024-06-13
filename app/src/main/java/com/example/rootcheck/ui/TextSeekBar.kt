@@ -19,10 +19,46 @@ import com.example.rootcheck.R
 import kotlin.math.ceil
 
 
+/**
+ * 自定义属性                | 类型               | 说明
+ * thumbHide                | boolean            | thumb是否隐藏，默认false，不隐藏
+ * touchEnable              | boolean            | 是否禁用手指拖动，true 禁用， false默认值，不禁用
+ * thumbText                | string             | thumb文字内容
+ * thumbTextSize            | dimension          | thumb字体大小
+ * thumbTextColor           | color/reference    | thumb字体颜色
+ * thumbBorderWidth         | dimension          | thumb边框宽度
+ * thumbBorderColor         | color/reference    | thumb边框颜色
+ * thumbBorderStartColor    | color/reference    | thumb边框渐变开始颜色
+ * thumbBorderEndColor      | color/reference    | thumb边框渐变结束颜色
+ * headEndPadding           | dimension          | thumb前后padding值，可以为负
+ * prospectProgressBarHeight| dimension          | 前景进度条高度
+ * prospectProgressBarStartColor | color/reference | 前景进度条开始的渐变颜色
+ * prospectProgressBarColor | color/reference    | 前景进度条颜色
+ * prospectProgressBarEndColor | color/reference  | 前景进度条结束的渐变颜色
+ * prospectProgressBarOffset | dimension         | 触发偏移量
+ * backgroundProgressBarHeight | dimension       | 背景进度条高度
+ * backgroundProgressBarStartColor | color/reference | 背景进度条渐变开始颜色
+ * backgroundProgressBarColor | color/reference  | 背景进度条颜色（如果设置为渐变，则，这个是中间的）
+ * backgroundProgressBarEndColor | color/reference | 背景进度条渐变结束颜色
+ * backgroundProgressBarOffset | dimension       | 触发偏移量
+ * thumbBackgroundStartColor | color/reference   | thumb开始颜色
+ * thumbBackgroundColor     | color/reference    | thumb颜色
+ * thumbBackgroundEndColor  | color/reference    | thumb结束颜色
+ * thumbOffset              | dimension          | thumb偏移量
+ * thumbWidth               | dimension          | thumb宽度
+ * thumbHeight              | dimension          | thumb高度
+ * thumbType                | square/round       | thumb圆角还是矩形
+ * strokeCap                | butt/round/square  | 画笔类型，butt：和square一样是直角画笔，但是不会充满开始和结束，round：圆角，square：直角画笔，可以充满前后的距离
+ * progress                 | integer            | thumb进度
+ * thumbIcon                | color/reference    | thumb图标
+ * thumbIconWidth           | dimension          | thumb图标宽，默认为icon的原始大小，超出边界将会被裁剪
+ * thumbIconHeight          | dimension          | thumb图标高，默认为icon的原始大小，超出边界将会被裁剪
+ */
+
 class TextSeekBar : View {
 
     companion object {
-        private const val TAG = "SeekBarView"
+        private const val TAG = "TextSeekBar"
         private const val ROUND = 0x20
         private const val SQUARE = 0x10
 
@@ -105,9 +141,9 @@ class TextSeekBar : View {
     private var thumbIconWidth = 0
     private var thumbIconHeight = 0
 
-    private var seekBarTouchListener: SeekBarViewOnChangeListener? = null
+    private var seekBarTouchListener: TextSeekBarOnChangeListener? = null
 
-    fun addOnChangeListener(listener: SeekBarViewOnChangeListener) {
+    fun addOnChangeListener(listener: TextSeekBarOnChangeListener) {
         seekBarTouchListener = listener
     }
 
@@ -177,68 +213,68 @@ class TextSeekBar : View {
         thumbColor = Color.parseColor("#000000")
         thumbBorderColor = Color.parseColor("#00FFFFFF")
 
-        val seekTypedArray = context.obtainStyledAttributes(attrs, R.styleable.SeekBarView)
-        isEnable = seekTypedArray.getBoolean(R.styleable.SeekBarView_touchEnable, false)
-        thumbText = seekTypedArray.getString(R.styleable.SeekBarView_thumbText) ?: ""
+        val seekTypedArray = context.obtainStyledAttributes(attrs, R.styleable.TextSeekBar)
+        isEnable = seekTypedArray.getBoolean(R.styleable.TextSeekBar_touchEnable, false)
+        thumbText = seekTypedArray.getString(R.styleable.TextSeekBar_thumbText) ?: ""
         thumbTextSize =
-            seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbTextSize, 26)
+            seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbTextSize, 26)
         thumbTextColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbTextColor, thumbTextColor)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbTextColor, thumbTextColor)
         prospectProgressBarHeight = seekTypedArray.getDimensionPixelOffset(
-            R.styleable.SeekBarView_prospectProgressBarHeight, 10
+            R.styleable.TextSeekBar_prospectProgressBarHeight, 10
         )
         prospectProgressBarColor = seekTypedArray.getColor(
-            R.styleable.SeekBarView_prospectProgressBarColor, prospectProgressBarColor
+            R.styleable.TextSeekBar_prospectProgressBarColor, prospectProgressBarColor
         )
         prospectProgressBarOffset = seekTypedArray.getDimensionPixelOffset(
-            R.styleable.SeekBarView_prospectProgressBarOffset, 5
+            R.styleable.TextSeekBar_prospectProgressBarOffset, 5
         )
         backgroundProgressBarHeight = seekTypedArray.getDimensionPixelOffset(
-            R.styleable.SeekBarView_backgroundProgressBarHeight, 10
+            R.styleable.TextSeekBar_backgroundProgressBarHeight, 10
         )
         backgroundProgressBarColor = seekTypedArray.getColor(
-            R.styleable.SeekBarView_backgroundProgressBarColor, backgroundProgressBarColor
+            R.styleable.TextSeekBar_backgroundProgressBarColor, backgroundProgressBarColor
         )
         backgroundProgressBarOffset = seekTypedArray.getDimensionPixelOffset(
-            R.styleable.SeekBarView_backgroundProgressBarOffset, 0
+            R.styleable.TextSeekBar_backgroundProgressBarOffset, 0
         )
         thumbColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbBackgroundColor, thumbColor)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbBackgroundColor, thumbColor)
         thumbBackgroundStartColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbBackgroundStartColor, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbBackgroundStartColor, 0)
         thumbBackgroundEndColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbBackgroundEndColor, 0)
-        thumbOffset = seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbOffset, 0)
-        thumbWidth = seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbWidth, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbBackgroundEndColor, 0)
+        thumbOffset = seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbOffset, 0)
+        thumbWidth = seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbWidth, 0)
         useSettingValue = 0 != thumbWidth
-        thumbHeight = seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbHeight, 0)
-        thumbType = seekTypedArray.getInt(R.styleable.SeekBarView_thumbType, -1)
-        strokeCap = seekTypedArray.getInt(R.styleable.SeekBarView_strokeCap, CAP_ROUND)
+        thumbHeight = seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbHeight, 0)
+        thumbType = seekTypedArray.getInt(R.styleable.TextSeekBar_thumbType, -1)
+        strokeCap = seekTypedArray.getInt(R.styleable.TextSeekBar_strokeCap, CAP_ROUND)
         thumbBorderWidth =
-            seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbBorderWidth, 0)
+            seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbBorderWidth, 0)
         thumbBorderColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbBorderColor, thumbBorderColor)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbBorderColor, thumbBorderColor)
         thumbBorderStartColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbBorderStartColor, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbBorderStartColor, 0)
         thumbBorderEndColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_thumbBorderEndColor, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_thumbBorderEndColor, 0)
         headEndPadding =
-            seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_headEndPadding, 0)
+            seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_headEndPadding, 0)
         backgroundProgressBarStartColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_backgroundProgressBarStartColor, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_backgroundProgressBarStartColor, 0)
         backgroundProgressBarEndColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_backgroundProgressBarEndColor, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_backgroundProgressBarEndColor, 0)
         prospectProgressBarStartColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_prospectProgressBarStartColor, 0)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_prospectProgressBarStartColor, 0)
         prospectProgressBarEndColor =
-            seekTypedArray.getColor(R.styleable.SeekBarView_prospectProgressBarEndColor, 0)
-        thumbHide = seekTypedArray.getBoolean(R.styleable.SeekBarView_thumbHide, false)
-        thumbIcon = seekTypedArray.getDrawable(R.styleable.SeekBarView_thumbIcon)
+            seekTypedArray.getColor(R.styleable.TextSeekBar_prospectProgressBarEndColor, 0)
+        thumbHide = seekTypedArray.getBoolean(R.styleable.TextSeekBar_thumbHide, false)
+        thumbIcon = seekTypedArray.getDrawable(R.styleable.TextSeekBar_thumbIcon)
         thumbIconWidth =
-            seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbIconWidth, 0)
+            seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbIconWidth, 0)
         thumbIconHeight =
-            seekTypedArray.getDimensionPixelOffset(R.styleable.SeekBarView_thumbIconHeight, 0)
-        val p = seekTypedArray.getInt(R.styleable.SeekBarView_progress, 0)
+            seekTypedArray.getDimensionPixelOffset(R.styleable.TextSeekBar_thumbIconHeight, 0)
+        val p = seekTypedArray.getInt(R.styleable.TextSeekBar_progress, 0)
         progress = (if (p < 0) 0 else if (p > 100) 100 else p).toFloat() / 100f
         seekTypedArray.recycle()
     }
@@ -664,6 +700,6 @@ object Up : Event()
 
 fun Any.and(block: () -> Unit = {}) = block.invoke()
 
-interface SeekBarViewOnChangeListener {
+interface TextSeekBarOnChangeListener {
     fun touch(percent: Float, eventType: Event)
 }

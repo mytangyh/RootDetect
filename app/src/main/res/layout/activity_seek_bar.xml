@@ -8,26 +8,26 @@
     tools:context=".SeekBar">
 
     <com.example.rootcheck.ui.TextSeekBar
+        android:layout_marginHorizontal="10dp"
+        android:id="@+id/seekBar"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        app:backgroundProgressBarColor="#FAB282"
-        app:backgroundProgressBarEndColor="#FB6501"
+        app:backgroundProgressBarColor="#EEEEEE"
         app:backgroundProgressBarHeight="8dp"
-        app:backgroundProgressBarStartColor="#FFE8D9"
-        app:headEndPadding="-7dp"
-        app:progress="40"
-        app:prospectProgressBarColor="#B18BF4"
-        app:prospectProgressBarEndColor="#630DFB"
+        app:progress="48"
+        app:headEndPadding="-5dp"
+        app:prospectProgressBarColor="#E8302E"
         app:prospectProgressBarHeight="8dp"
-        app:prospectProgressBarStartColor="#F6F1FF"
-        app:thumbBackgroundColor="#798EFF"
-        app:thumbBorderColor="#D5C9F1"
+        app:thumbBackgroundColor="#E8302E"
         app:thumbBorderWidth="4dp"
         app:thumbHeight="25dp"
-        app:thumbText="这里是文字"
+        app:thumbText="48%"
         app:thumbTextColor="#ffffff"
-        app:thumbTextSize="18sp"
-        app:thumbType="round" />
+        app:thumbTextSize="16sp"
+        app:thumbType="round"
+        app:touchEnable="true"
+        app:strokeCap="round"
+        />
 
 
 
