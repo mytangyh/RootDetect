@@ -1,7 +1,9 @@
 <!-- custom_bottom_sheet.xml -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -70,13 +72,17 @@
 
 
 
+
+
         <!-- 列表 -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-             />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            />
+
 
         <!-- 底部按钮 -->
         <Button

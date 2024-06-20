@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+   >
+
+    <TextView
+        android:id="@+id/success_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="委托提交成功 (11)"
+        android:textColor="#2196F3"
+        android:textSize="16sp"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/success_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="同花顺、浙商证券、京东方A、浙商证券、京东方A等11只股票"
+        android:paddingLeft="16dp" />
+
+    <TextView
+        android:id="@+id/failure_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="委托提交失败 (4)"
+        android:textColor="#F44336"
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:paddingTop="16dp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:paddingLeft="16dp">
+
+        <TextView
+            android:id="@+id/failure_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#FFF8F8F8"
+            android:textColor="#FF757575"
+            android:text="明阳智能 本次批量转入不影响已执行的股票，剩余未执行的股票将不再... 同花顺 本次担保品批量转入已执行15只股..."
+            android:padding="8dp" />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/pending_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="剩余未执行 (85)"
+        android:textColor="#FFC107"
+
+        android:textSize="16sp"
+        android:padding="8dp"
+        android:paddingTop="16dp" />
+
+    <TextView
+        android:id="@+id/pending_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="同花顺、浙商证券、京东方A、浙商证券、京东方A等85只股票"
+        android:paddingLeft="16dp" />
+</LinearLayout>
