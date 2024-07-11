@@ -52,6 +52,10 @@ class MainActivity : AppCompatActivity() {
 
 
         }
+        mbinding.buildBtn.setOnClickListener {
+//            mbinding.tvTest.text = BuildHelper.getBuildInfo()
+            mbinding.tvTest.text = RequestPrivacy(this).getPhoneState()
+        }
 
     }
 
