@@ -1,51 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Download Example</title>
+    <title>Camera Test</title>
 </head>
 <body>
-<h1>File Download Example</h1>
-<button onclick="downloadFile()">Download File</button>
-<button onclick="downloadFile2()">Download File2</button>
-<button onclick="downloadFile3()">Download File3</button>
-<button onclick="testPost()">testJS2Java</button>
-<p id="myParagraph">原始内容</p>
-
+<input type="file" accept="image/*" capture="camera">
+<img id="result" style="display:none;">
 <script>
-    function downloadFile() {
-        window.location.href = 'https://download.10jqka.com.cn/index/download/id/538/';
-    }
-    function downloadFile2() {
-        window.location.href = 'https://hdscanner.com/install/android/scannerHD.apk';
-    }
-    function downloadFile3() {
-        window.location.href = 'https://www.baidu.com/';
-    }
-    function testPost(){
-
-        if (window.WebViewJavascriptBridge) {
-
-            window.WebViewJavascriptBridge.callHandler(
-                'submitFromWeb'
-                , {'param': "testJS2java"}
-                , function(responseData) {
-                    document.getElementById("myParagraph").innerHTML = "send get responseData from java, data = " + responseData.toString()
-                }
-            );
-        } else {
-            document.addEventListener(
-                'WebViewJavascriptBridgeReady'
-                , function() {
-                    //do your work here
-                },
-                false
-            );
+    document.querySelector('input[type="file"]').addEventListener('change', function(event) {
+        if (event.target.files.length > 0) {
+            var img = document.getElementById('result');
+            img.src = URL.createObjectURL(event.target.files[0]);
+            img.style.display = 'block';
         }
-
-
-    }
+    });
 </script>
 </body>
 </html>

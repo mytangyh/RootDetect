@@ -29,6 +29,12 @@
         android:layout_height="wrap_content"
         android:text="Build" />
 
+    <Button
+        android:id="@+id/webBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="webBtn" />
+
     <EditText
         android:hint="password"
         android:inputType="textPassword"
@@ -58,6 +64,10 @@
 
 <!--        />-->
 
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
     <ScrollView
         android:layout_width="match_parent"
