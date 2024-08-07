@@ -45,4 +45,10 @@ If you have any questions, encounter issues, or want to contribute, feel free to
 
 Thank you for supporting open-source security initiatives!
 
+## Project supported by JetBrains
+
+Many thanks to JetBrains for generously providing a license, enabling me to work on this and other open-source projects.
+
+[![](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=https://github.com/overtrue)
+
 -----
