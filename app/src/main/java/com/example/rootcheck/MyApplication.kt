@@ -7,55 +7,47 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
 
 class MyApplication : Application() {
     var isAppInForeground = false
     override fun onCreate() {
         super.onCreate()
         instance = this
-        val myServiceIntent = Intent(this, MyService::class.java)
-        startService(myServiceIntent)
-        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                // 应用启动
-            }
-
-            override fun onActivityStarted(activity: Activity) {
-                // 应用进入前台
-                isAppInForeground = true
-            }
-
-            override fun onActivityResumed(activity: Activity) {
-                // 应用可见
-            }
-
-            override fun onActivityPaused(activity: Activity) {
-                // 应用失去焦点
-            }
-
-            override fun onActivityStopped(activity: Activity) {
-                // 应用进入后台
-                isAppInForeground = false
-            }
-
-            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-                // 保存状态
-            }
-
-            override fun onActivityDestroyed(activity: Activity) {
-                // 销毁
-            }
-        })
+        registerActivityLifecycleCallbacks(AppLifecycleTracker())
     }
-    private fun isBack(context:Context):Boolean{
-        val activityManager  = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val appProcesses = activityManager.runningAppProcesses
-        for (app in appProcesses){
-            if (app.processName.equals(context.packageName)) {
-                return app.importance == RunningAppProcessInfo.IMPORTANCE_BACKGROUND
+    inner class AppLifecycleTracker : ActivityLifecycleCallbacks {
+
+        private var activityReferences = 0
+        private var isActivityChangingConfigurations = false
+
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+
+        override fun onActivityStarted(activity: Activity) {
+            if (++activityReferences == 1 && !isActivityChangingConfigurations) {
+                // App enters foreground
             }
         }
-        return false
+
+        override fun onActivityResumed(activity: Activity) {}
+
+        override fun onActivityPaused(activity: Activity) {}
+
+        override fun onActivityStopped(activity: Activity) {
+            isActivityChangingConfigurations = activity.isChangingConfigurations
+            if (--activityReferences == 0 && !isActivityChangingConfigurations) {
+                // App enters background
+                Toast.makeText(applicationContext, "App moved to background", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+
+        override fun onActivityDestroyed(activity: Activity) {}
     }
     companion object {
         private lateinit var instance:Application

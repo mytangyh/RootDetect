@@ -7,33 +7,43 @@
     tools:context=".MainActivity">
 
 
-    <Button
-        android:id="@+id/checkBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SecurityDemo" />
-    <Button
-        android:id="@+id/towTabBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="towTabDemo" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/checkBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SecurityDemo" />
+        <Button
+            android:id="@+id/towTabBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="towTabDemo" />
 
-    <Button
-        android:id="@+id/dialogBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="dialogBtn" />
-    <Button
-        android:id="@+id/buildBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Build" />
+        <Button
+            android:id="@+id/dialogBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="dialogBtn" />
 
-    <Button
-        android:id="@+id/webBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="webBtn" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/buildBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BuildInfo" />
+
+        <Button
+            android:id="@+id/webBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="webBtn" />
+    </LinearLayout>
 
     <EditText
         android:hint="password"
@@ -64,10 +74,7 @@
 
 <!--        />-->
 
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+
 
     <ScrollView
         android:layout_width="match_parent"
