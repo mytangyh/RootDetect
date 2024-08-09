@@ -97,6 +97,9 @@ class MainActivity : AppCompatActivity() {
 //            mbinding.tvTest.text = RequestPrivacy(this).getPhoneState()
             startThreads()
         }
+        mbinding.webBtn.setOnClickListener {
+            startActivity(Intent(this, WebViewActivity::class.java))
+        }
     }
 
 

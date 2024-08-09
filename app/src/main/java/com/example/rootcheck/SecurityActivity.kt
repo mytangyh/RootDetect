@@ -20,6 +20,7 @@ class SecurityActivity : AppCompatActivity() {
         binding = ActivitySecurityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        init()
     }
 
     private fun init() {
