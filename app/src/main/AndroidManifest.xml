@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <queries>
         <package android:name="com.hexin.yuqing" />
@@ -35,6 +36,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.com.example.lib.RootCheck"
         tools:targetApi="31">
+        <activity
+            android:name=".ImageActivity"
+            android:exported="false" />
         <activity
             android:name=".WebViewActivity"
             android:exported="false" />

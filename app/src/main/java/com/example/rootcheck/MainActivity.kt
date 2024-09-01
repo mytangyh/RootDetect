@@ -80,27 +80,31 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, TabLayoutActivity::class.java))
         }
         mbinding.dialogBtn.setOnClickListener {
-            val bottomSheetDialog = BottomSheetDialog()
+            val bottomSheetDialog = BottomSheetDialogOne()
             bottomSheetDialog.show(supportFragmentManager, "BottomSheetDialog")
         }
         var count = 0
         mbinding.buildBtn.setOnClickListener {
-//            mbinding.tvTest.text = BuildHelper.getBuildInfo()
+            mbinding.tvTest.text = BuildHelper.getBuildInfo()
             // 获取版本号
             val version = packageManager.getPackageInfo(packageName, 0).versionName
-            mbinding.tvTest.text = "${
-                Settings.Secure.getString(
-                    contentResolver,
-                    Settings.Secure.ANDROID_ID
-                )
-            }$version  ${count++}\n"
-//            mbinding.tvTest.text = RequestPrivacy(this).getPhoneState()
-            startThreads()
+//            mbinding.tvTest.text = "${
+//                Settings.Secure.getString(
+//                    contentResolver,
+//                    Settings.Secure.ANDROID_ID
+//                )
+//            }$version  ${count++}\n"
+            mbinding.tvTest.text = RequestPrivacy(this).getPhoneState()
+//            startThreads()
         }
         mbinding.webBtn.setOnClickListener {
             startActivity(Intent(this, WebViewActivity::class.java))
         }
+        mbinding.imageBtn.setOnClickListener {
+            startActivity(Intent(this, ImageActivity::class.java))
+        }
     }
+
 
 
     class CustomPasswordTransformationMethod : PasswordTransformationMethod() {

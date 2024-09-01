@@ -15,7 +15,7 @@ class BuildHelper {
         |Host: ${Build.HOST}
         |ID: ${Build.ID}
         |Manufacturer: ${Build.MANUFACTURER}
-        |Model: ${Build.MODEL}
+        |Model: ${Build.MODEL.replace(" ", "").trim()}
         |Product: ${Build.PRODUCT}
         |Serial: ${Build.SERIAL}
         |SDK Version: ${Build.VERSION.SDK_INT}

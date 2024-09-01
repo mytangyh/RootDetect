@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
-class BottomSheetDialog : BottomSheetDialogFragment() {
+class BottomSheetDialogOne : BottomSheetDialogFragment() {
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var recyclerView: RecyclerView
@@ -56,16 +56,18 @@ class BottomSheetDialog : BottomSheetDialogFragment() {
         if (dialog != null) {
             val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
             bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
-            bottomSheetBehavior.peekHeight = (resources.displayMetrics.heightPixels * 0.5).toInt() // 半屏高度
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+            // 设置初始高度为屏幕高度的 60%
+            val initialHeight = (resources.displayMetrics.heightPixels * 0.6).toInt()
+            bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+            bottomSheetBehavior.peekHeight = initialHeight
 
             bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // 状态变化时的回调
                     if (newState == BottomSheetBehavior.STATE_DRAGGING) {
                         recyclerView.stopNestedScroll()
-//                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                    }else if (newState == BottomSheetBehavior.STATE_SETTLING){
+                    } else if (newState == BottomSheetBehavior.STATE_SETTLING) {
                         recyclerView.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
                     }
                 }
@@ -75,16 +77,21 @@ class BottomSheetDialog : BottomSheetDialogFragment() {
                 }
             })
 
-
-
-
-
-
-
+            // 强制触发一次布局重新测量和调整
+            bottomSheet.viewTreeObserver.addOnGlobalLayoutListener {
+                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    val totalHeight = bottomSheet.height
+                    val buttonHeight = dialog.findViewById<View>(R.id.buttonFinish).height
+                    val availableHeight = totalHeight - buttonHeight
+                    recyclerView.layoutParams.height = availableHeight
+                }
+            }
         }
     }
 
- private fun getData(): List<Item> {
+
+
+    private fun getData(): List<Item> {
     val items = mutableListOf<Item>()
     repeat(30) {
         items.add(Item(14, "浙商证券", 300, "提交成功"))
