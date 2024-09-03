@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import androidx.core.view.ViewCompat
+import androidx.core.view.setPadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -47,6 +48,14 @@ class BottomSheetDialogOne : BottomSheetDialogFragment() {
 
     }
 
+    fun getStatusBarHeight(): Int {
+        var statusBarHeight = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            statusBarHeight = resources.getDimensionPixelSize(resourceId)
+        }
+        return statusBarHeight
+    }
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -55,50 +64,56 @@ class BottomSheetDialogOne : BottomSheetDialogFragment() {
         val dialog = dialog
         if (dialog != null) {
             val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+            val height= (resources.displayMetrics.heightPixels * 0.6).toInt()
+            val remainHeight= (resources.displayMetrics.heightPixels)- getStatusBarHeight()-height+getStatusBarHeight()
+            bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet).apply {
+                state = BottomSheetBehavior.STATE_COLLAPSED
+//                isHideable = true
+//                isDraggable = true
+                peekHeight = height
+            }
 
             // 设置初始高度为屏幕高度的 60%
-            val initialHeight = (resources.displayMetrics.heightPixels * 0.6).toInt()
-            bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-            bottomSheetBehavior.peekHeight = initialHeight
+//            val initialHeight = (resources.displayMetrics.heightPixels * 0.6).toInt()
+//            bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+//            bottomSheetBehavior.peekHeight = initialHeight
 
             bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     // 状态变化时的回调
-                    if (newState == BottomSheetBehavior.STATE_DRAGGING) {
-                        recyclerView.stopNestedScroll()
-                    } else if (newState == BottomSheetBehavior.STATE_SETTLING) {
-                        recyclerView.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
+                    if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+//                        recyclerView.stopNestedScroll()
+                        bottomSheet.setPadding(bottomSheet.paddingLeft, bottomSheet.paddingTop, bottomSheet.paddingRight, remainHeight)
+                    } else if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+//                        recyclerView.startNestedScroll(ViewCompat.SCROLL_AXIS_VERTICAL)
+                        bottomSheet.setPadding(bottomSheet.paddingLeft, bottomSheet.paddingTop, bottomSheet.paddingRight, 0)
+
                     }
                 }
 
                 override fun onSlide(bottomSheet: View, slideOffset: Float) {
                     // 滑动时的回调
+                    if (slideOffset>0){
+                        bottomSheet.setPadding(bottomSheet.paddingLeft, bottomSheet.paddingTop, bottomSheet.paddingRight, remainHeight.times(1-slideOffset).toInt())
+
+                    }
                 }
             })
 
-            // 强制触发一次布局重新测量和调整
-            bottomSheet.viewTreeObserver.addOnGlobalLayoutListener {
-                if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
-                    val totalHeight = bottomSheet.height
-                    val buttonHeight = dialog.findViewById<View>(R.id.buttonFinish).height
-                    val availableHeight = totalHeight - buttonHeight
-                    recyclerView.layoutParams.height = availableHeight
-                }
-            }
+            bottomSheet.setPadding(bottomSheet.paddingLeft, bottomSheet.paddingTop, bottomSheet.paddingRight, remainHeight)
+
         }
     }
 
 
-
     private fun getData(): List<Item> {
-    val items = mutableListOf<Item>()
-    repeat(30) {
-        items.add(Item(14, "浙商证券", 300, "提交成功"))
+        val items = mutableListOf<Item>()
+        repeat(3) { index ->
+            items.add(Item(index + 1, "浙商证券", 300 + index * 10, "提交成功"))
+        }
+        return items
     }
-    items[0] = Item(15, "恒生电子", 300, "提交成功") // 修改第一个元素
-    return items
-}
+
 }
 
 

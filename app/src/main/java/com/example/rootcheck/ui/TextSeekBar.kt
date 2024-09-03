@@ -372,13 +372,22 @@ class TextSeekBar : View {
         prospectPaint.strokeCap = getStrokeCap()
         prospectPaint.strokeJoin = Paint.Join.BEVEL
         prospectPaint.isAntiAlias = true
-
-        val endX = if (getStrokeCap() == Paint.Cap.BUTT) {
-            moveThumb
-        } else {
-            val end = if (moveThumb < pw) pw else moveThumb.coerceAtMost(mWidth - pw)
-            end
+        val endX = when (getStrokeCap()) {
+            Paint.Cap.BUTT -> {
+                // 如果是直角画笔，确保起始位置完全填充
+                moveThumb.coerceAtMost(mWidth - pw)
+            }
+            else -> {
+                moveThumb.coerceAtMost(mWidth - pw)
+            }
         }
+
+//        val endX = if (getStrokeCap() == Paint.Cap.BUTT) {
+//            moveThumb
+//        } else {
+//            val end = if (moveThumb < pw) pw else moveThumb.coerceAtMost(mWidth - pw)
+//            end
+//        }
 
         if (prospectProgressBarStartColor != 0 || prospectProgressBarEndColor != 0) {
             val intArray = mutableListOf<Int>()
