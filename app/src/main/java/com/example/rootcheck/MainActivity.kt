@@ -94,8 +94,14 @@ class MainActivity : AppCompatActivity() {
 //                    Settings.Secure.ANDROID_ID
 //                )
 //            }$version  ${count++}\n"
-            mbinding.tvTest.text = RequestPrivacy(this).getPhoneState()
+//            mbinding.tvTest.text = RequestPrivacy(this).getPhoneState()
 //            startThreads()
+//            mbinding.tvTest.text = BuildHelper
+            if ("HONOR".equals(Build.BRAND)){
+                Toast.makeText(this, "\"HONOR\".equals(Build.BRAND)", Toast.LENGTH_SHORT).show()
+            }else{
+                Toast.makeText(this, "HONOR.notEquals(Build.BRAND)", Toast.LENGTH_SHORT).show()
+            }
         }
         mbinding.webBtn.setOnClickListener {
             startActivity(Intent(this, WebViewActivity::class.java))

@@ -140,7 +140,7 @@ class WebViewActivity : AppCompatActivity() {
     }
     private fun checkAndRequestPermissions() {
         when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !"HONOR".equals(Build.BRAND) -> {
                 // Android 13及以上版本
                 if (ContextCompat.checkSelfPermission(
                         this,
@@ -162,14 +162,14 @@ class WebViewActivity : AppCompatActivity() {
                 // Android 13以下版本
                 if (ContextCompat.checkSelfPermission(
                         this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
                     Toast.makeText(this, "READ_EXTERNAL_STORAGE", Toast.LENGTH_SHORT).show()
 
                     ActivityCompat.requestPermissions(
                         this,
-                        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                         REQUEST_CODE_PERMISSION_READ_EXTERNAL_STORAGE
                     )
                 } else {
