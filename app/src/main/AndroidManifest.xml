@@ -37,6 +37,9 @@
         android:theme="@style/Theme.com.example.lib.RootCheck"
         tools:targetApi="31">
         <activity
+            android:name=".RsaActivity"
+            android:exported="false" />
+        <activity
             android:name=".ImageActivity"
             android:exported="false" />
         <activity

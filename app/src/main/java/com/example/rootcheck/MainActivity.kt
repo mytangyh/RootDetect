@@ -1,31 +1,15 @@
 package com.example.rootcheck
 
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
-import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
 import android.view.View
-import android.webkit.ValueCallback
-import android.webkit.WebChromeClient
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.example.rootcheck.databinding.ActivityMainBinding
-import kotlin.io.encoding.ExperimentalEncodingApi
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageInfo
-import android.graphics.Bitmap
-import android.os.Build
-import android.provider.MediaStore
-import android.provider.Settings
-import android.webkit.WebView.setWebContentsDebuggingEnabled
-import java.io.ByteArrayOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -108,6 +92,9 @@ class MainActivity : AppCompatActivity() {
         }
         mbinding.imageBtn.setOnClickListener {
             startActivity(Intent(this, ImageActivity::class.java))
+        }
+        mbinding.RSABtn.setOnClickListener {
+            startActivity(Intent(this, RsaActivity::class.java))
         }
     }
 
