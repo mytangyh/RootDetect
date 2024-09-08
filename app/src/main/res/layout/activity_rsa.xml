@@ -1,44 +1,65 @@
-<!-- res/layout/activity_main.xml -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:id="@+id/main"
+    tools:context=".RsaActivity">
 
     <EditText
         android:id="@+id/inputText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter text to encrypt"
-        android:layout_margin="16dp"/>
+        android:layout_margin="16dp" />
+
+    <!-- Button for selecting the public key file -->
+    <Button
+        android:id="@+id/btnSelectPublicKey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Public Key"
+        android:layout_below="@id/inputText"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp" />
+    <Button
+        android:id="@+id/btnSelectPrivateKey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select Private Key"
+        android:layout_below="@id/btnSelectPublicKey"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp" />
+
 
     <Button
         android:id="@+id/btnEncrypt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Encrypt"
-        android:layout_below="@id/inputText"
+        android:layout_below="@id/btnSelectPrivateKey"
         android:layout_marginTop="16dp"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="16dp"/>
+        android:layout_marginStart="16dp" />
 
     <Button
         android:id="@+id/btnDecrypt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Decrypt"
-        android:layout_below="@id/inputText"
+        android:layout_below="@id/btnSelectPrivateKey"
         android:layout_marginTop="16dp"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="16dp"/>
+        android:layout_marginEnd="16dp" />
 
     <TextView
         android:id="@+id/encryptedText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/btnEncrypt"
+        android:layout_below="@id/btnDecrypt"
         android:layout_marginTop="16dp"
-        android:text="Encrypted Text"/>
+        android:text="Encrypted Text" />
 
     <TextView
         android:id="@+id/decryptedText"
@@ -46,6 +67,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/encryptedText"
         android:layout_marginTop="16dp"
-        android:text="Decrypted Text"/>
+        android:text="Decrypted Text" />
 
 </RelativeLayout>
