@@ -69,12 +69,16 @@ tasks.register("processRsaKeys") {
                 .replace("-----END PUBLIC KEY-----", "")
                 .replace("\\s".toRegex(), "")  // 去除所有空白字符
 
+            println(rsaKey)
+            // 获取文件名（不包含后缀）
+            val baseFileName = rsaKeyFile.nameWithoutExtension
+            println("Base FileName: $baseFileName")
+
             // 对文件名进行Base64编码并去除等号
             val encodedFileName = Base64.getEncoder()
-                .encodeToString(rsaKeyFile.name.toByteArray(Charsets.UTF_8))
+                .encodeToString(baseFileName.toByteArray(Charsets.UTF_8))
                 .replace("=", "")  // 去除Base64编码的等号
             println("Encoded FileName: $encodedFileName")
-
             // 记录文件名的字符长度
             val fileNameLength = encodedFileName.length
             println("File Name Length: $fileNameLength")
@@ -82,65 +86,68 @@ tasks.register("processRsaKeys") {
             // 根据文件名的长度对公钥进行分段
             val keyParts = rsaKey.chunked(fileNameLength)
 
-            // 将文件名字符插入到每段的中间位置
+            // 将文件名字符插入到每段的中间位置 如果文件名不够长，插入当前段的第一个字符
             val combinedParts = keyParts.mapIndexed { index, part ->
                 val charToInsert = if (index < encodedFileName.length) {
                     encodedFileName[index].toString()
                 } else {
-                    ""
+                    part.first().toString()
                 }
                 val middleIndex = part.length / 2
                 part.substring(0, middleIndex) + charToInsert + part.substring(middleIndex)
             }
+            println("after insert:$combinedParts")
 
-            // 对每一段进行Base64编码并去除等号，除了最后一行不编码
+            // 对每一段进行Base64编码并去除等号，除了最后一行
             val encodedParts = combinedParts.mapIndexed { index, part ->
                 if (index != combinedParts.size - 1) {
-                    Base64.getEncoder()
+                    var encodedPart = Base64.getEncoder()
                         .encodeToString(part.toByteArray(Charsets.UTF_8))
                         .replace("=", "")  // 去除Base64编码的等号
+
+                    // 如果是奇数行，翻转字符串
+                    if (index % 2 == 0) {
+                        encodedPart = encodedPart.reversed()
+                    }else{
+                        // 如果是偶数行，前后反转字符串
+                        val mid = encodedPart.length / 2
+
+                        // 将字符串分为两部分
+                        val firstHalf = encodedPart.substring(0, mid)
+                        val secondHalf = encodedPart.substring(mid)
+                        encodedPart = secondHalf + firstHalf
+                    }
+                    println("index:$index  encodedPart:$encodedPart")
+                    encodedPart
                 } else {
                     part  // 最后一段不编码
                 }
             }
 
+            println("encodedParts:$encodedParts")
+            val endFlag = Base64.getEncoder()
+                .encodeToString("@$fileNameLength@".toByteArray(Charsets.UTF_8))
+                .replace("=", "")
+            // 将文件名的Base64编码添加到最后一行并翻转
+            val finalLine = encodedFileName.reversed()+encodedParts.last()+endFlag
+
             // 将处理后的公钥部分写入文件
-            encodedParts.forEach { part ->
-                outputStream.write((part + "\n").toByteArray())
+            (encodedParts.dropLast(1) + finalLine).forEach { part ->
+                outputStream.write((part+ "\n").toByteArray())
             }
+            println("final:${encodedParts.dropLast(1) + finalLine}")
+
+
 
             // 记录一个分隔符用于区分不同公钥文件
-            outputStream.write("-----END RSA KEY-----\n".toByteArray())
+//            outputStream.write("$endFlag\n".toByteArray())
         }
 
         outputStream.close()
         println("Processed and encoded RSA keys saved to encoded_rsa_keys.txt")
-
-        // 读取并恢复原始文件名及公钥内容
-        println("\nRestoring file names and public keys...")
-
-        val inputFile = file("${assetsDir}/encoded_rsa_keys.txt")
-        val lines = inputFile.readLines()
-
-        var currentKey = StringBuilder()
-        lines.forEach { line ->
-            if (line == "-----END RSA KEY-----") {
-                // 当遇到分隔符时恢复当前公钥文件
-                val restoredKey = currentKey.toString()
-                println("Restored Public Key:\n$restoredKey")
-                currentKey.clear() // 清除以恢复下一个公钥
-            } else {
-                // 如果不是最后一行且Base64编码过，则进行解码
-                val decodedPart = try {
-                    Base64.getDecoder().decode(line).toString(Charsets.UTF_8)
-                } catch (e: IllegalArgumentException) {
-                    line // 最后一行或未编码部分直接返回原内容
-                }
-                currentKey.append(decodedPart)
-            }
-        }
     }
 }
+
 
 
 // 确保任务在编译前运行
