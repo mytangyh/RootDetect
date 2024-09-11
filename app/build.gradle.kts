@@ -126,10 +126,10 @@ tasks.register("processRsaKeys") {
 
             println("encodedParts:$encodedParts")
             val endFlag = Base64.getEncoder()
-                .encodeToString("@$fileNameLength@".toByteArray(Charsets.UTF_8))
+                .encodeToString("@${encodedFileName.reversed()+fileNameLength}@".toByteArray(Charsets.UTF_8))
                 .replace("=", "")
-            // 将文件名的Base64编码添加到最后一行并翻转
-            val finalLine = encodedFileName.reversed()+encodedParts.last()+endFlag
+            // 将文件名的Base64编码添加到最后一行
+            val finalLine = endFlag+encodedParts.last()
 
             // 将处理后的公钥部分写入文件
             (encodedParts.dropLast(1) + finalLine).forEach { part ->
