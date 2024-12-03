@@ -69,7 +69,11 @@ class MainActivity : AppCompatActivity() {
         }
         var count = 0
         mbinding.buildBtn.setOnClickListener {
-            mbinding.tvTest.text = BuildHelper.getBuildInfo()
+            mbinding.tvTest.text = buildString {
+        append(BuildHelper.getBuildInfo())
+        append("\n")
+        append(RomUtils.getRomInfo())
+    }
             // 获取版本号
             val version = packageManager.getPackageInfo(packageName, 0).versionName
 //            mbinding.tvTest.text = "${
