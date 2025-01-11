@@ -5,11 +5,14 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.lib.HookDetector
 import com.example.rootcheck.databinding.ActivityMainBinding
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -71,7 +74,7 @@ class MainActivity : AppCompatActivity() {
         mbinding.buildBtn.setOnClickListener {
             mbinding.tvTest.text = buildString {
         append(BuildHelper.getBuildInfo())
-        append("\n")
+        append("\n Android ID: ${Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)}\n")
         append(RomUtils.getRomInfo())
     }
             // 获取版本号
@@ -100,6 +103,8 @@ class MainActivity : AppCompatActivity() {
         mbinding.RSABtn.setOnClickListener {
             startActivity(Intent(this, RsaActivity::class.java))
         }
+        var detected = HookDetector.isDetected()
+        mbinding.tvTest.text = "检测结果：\n" + detected
     }
 
 
@@ -128,6 +133,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun replaceLetterToNumber(str: String): String {
+        var res = str.toLowerCase(Locale.getDefault())
+        for (i in 0 .. 25) {
+            val c = (i+97).toChar()
+            if (res.contains(c.toString())){
+                val x = (i/2.6f).toInt()
+                val t = (x+48).toChar()
+                res = res.replace(c.toString().toRegex(), t.toString())
+            }
+        }
+        return res
+    }
 
 }
 

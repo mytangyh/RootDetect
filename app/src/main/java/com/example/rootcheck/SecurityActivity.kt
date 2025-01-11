@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.telephony.TelephonyManager
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.lib.EmulatorDetectorNew
@@ -27,12 +26,13 @@ class SecurityActivity : AppCompatActivity() {
         binding.checkBtn.setOnClickListener {
             val emulatorDetectorNew = EmulatorDetectorNew()
             var detected = false
-            var checkFrida: Boolean
+            var checkFrida: Boolean = HookDetector.isDetected()
             val buildStr =
                 "\nBRAND:${Build.BRAND} \nDEVICE:${Build.DEVICE} \nRELEASE:${Build.VERSION.RELEASE} \nMODEL:${Build.MODEL}"
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("checkFrida!!")
+            builder.setMessage("检测结果：\n" + checkFrida)
             builder.setPositiveButton("确定") { _, _ ->
             }
             val dialog = builder.create()
@@ -45,7 +45,7 @@ class SecurityActivity : AppCompatActivity() {
             val checkHttpProxy = ProxyDetector.checkHttpProxy()
             val vpnConnected1 = ProxyDetector.isVpnConnected(this)
             val deviceInVPN = ProxyDetector.isDeviceInVPN()
-            Toast.makeText(this, toastMessage(), Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, toastMessage(), Toast.LENGTH_SHORT).show()
 
         }
 

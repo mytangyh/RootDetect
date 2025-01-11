@@ -13,7 +13,7 @@ class HookDetector {
 
     companion object {
         fun isDetected(): Boolean {
-            return Native.checkFrida() || check_proc_task()
+            return Native.checkFrida()
         }
 
             fun printFileNames() {
@@ -31,19 +31,20 @@ class HookDetector {
         private fun check_proc_task(): Boolean {
             val dir = File("/proc/self/task/")
             val tasks = dir.listFiles()
+            var flag = false
             if (tasks != null) {
                 for (task in tasks) {
                     try {
                         val reader = BufferedReader(FileReader(task.absolutePath + "/status"))
                         var line: String?
                         while (reader.readLine().also { line = it } != null) {
-//                            Log.d("TAG", "$line")
+                            Log.d("TAG", "$line")
                             if (line?.contains("gmain") == true || line?.contains("pool-frida") == true || line?.contains(
                                     "gdbus"
                                 ) == true || (line?.contains("gum-js-loop") == true)||(line?.contains("linjector ") == true)
                             ) {
-                                Log.e("TAG", "$line")
-//                                return true
+                                Log.e("TAG", "find: $line")
+                                flag = true
                             }
                         }
                     } catch (e: IOException) {
@@ -51,7 +52,7 @@ class HookDetector {
                     }
                 }
             }
-            return false
+            return flag
         }
 
         private const val XPOSED_HELPERS = "de.robv.android.xposed.XposedHelpers"

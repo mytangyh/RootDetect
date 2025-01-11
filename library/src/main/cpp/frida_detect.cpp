@@ -39,7 +39,7 @@ public:
         string line;
 
         while (getline(maps, line)) {
-            if (line.find("frida") != string::npos||line.find("XposedBridge") != string::npos) {
+            if (line.find("frida-agent") != string::npos||line.find("XposedBridge") != string::npos) {
                 maps.close();
                 return true;
             }
@@ -150,8 +150,8 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_example_lib_Native_00024Companion_checkFrida(JNIEnv *env, jobject thiz) {
     AntiFrida antiFrida;
-//    bool res = antiFrida.check_frida_server()||antiFrida.check_proc_maps()||antiFrida.check_proc_fd();
-    bool res = antiFrida.checkFrida();
+    bool res = antiFrida.check_frida_server()||antiFrida.check_proc_maps()||antiFrida.check_proc_fd();
+//    bool res = antiFrida.checkFrida();
     return res;
 }
 
