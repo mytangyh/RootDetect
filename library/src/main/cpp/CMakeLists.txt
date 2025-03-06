@@ -38,3 +38,27 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
         android
         log)
 
+## 定义函数来复制.so文件，并添加条件检查
+#function(copy_to_armeabi target)
+#    # 获取当前ABI
+#    string(TOLOWER "${ANDROID_ABI}" CURRENT_ABI)
+#
+#    # 只在构建armeabi-v7a时执行复制操作
+#    if(CURRENT_ABI STREQUAL "armeabi-v7a")
+#        add_custom_command(
+#                TARGET ${target} POST_BUILD
+#                COMMAND ${CMAKE_COMMAND} -E make_directory
+#                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/../armeabi
+#                COMMAND ${CMAKE_COMMAND} -E copy
+#                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${target}.so
+#                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/../armeabi/lib${target}.so
+#                COMMENT "Copying armeabi-v7a library to armeabi directory for ${target}"
+#        )
+#        message(STATUS "Added copy command for ${target} to armeabi directory")
+#    else()
+#        message(STATUS "Skipping copy to armeabi for ABI: ${CURRENT_ABI}")
+#    endif()
+#endfunction()
+#
+## 对目标库应用此函数
+#copy_to_armeabi(frida_detect)

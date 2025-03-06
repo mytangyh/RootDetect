@@ -31,17 +31,86 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 }
 
-dependencies {
+// 复制 armeabi-v7a 到 armeabi
+task copySoFilesToArmeabi {
+    doLast {
+        println "====== 🚀 开始复制 SO 文件到 armeabi ======"
 
+        // 获取 CMake 生成的 SO 文件路径（Debug 和 Release）
+        def cmakeRoot = file("${buildDir}/intermediates/cxx")
+        def possibleSourceDirs = cmakeRoot.listFiles()?.collect { it.absolutePath } ?: []
+        possibleSourceDirs += ["${projectDir}/src/main/jniLibs/armeabi-v7a"]
+
+        // 目标目录
+        def jniLibsDir = file("${projectDir}/src/main/jniLibs")
+        def armeabiDir = new File(jniLibsDir, "armeabi")
+        if (!armeabiDir.exists()) {
+            armeabiDir.mkdirs()
+        }
+
+        def foundFiles = false
+
+        // 遍历所有可能的 `armeabi-v7a` 目录，查找 `so` 文件
+        possibleSourceDirs.each { sourceBasePath ->
+            def v7aDirs = fileTree(dir: sourceBasePath).matching { include("**/armeabi-v7a/**") }
+            v7aDirs.each { v7aDir ->
+                def soFiles = fileTree(dir: v7aDir).matching { include("*.so") }
+                if (soFiles.files.size() > 0) {
+                    println "✅ 在 ${v7aDir} 中找到 ${soFiles.files.size()} 个 SO 文件"
+                    foundFiles = true
+
+                    // 复制到 `armeabi` 目录
+                    soFiles.each { soFile ->
+                        def targetFile = new File(armeabiDir, soFile.name)
+                        println "📌 复制: ${soFile} -> ${targetFile}"
+
+                        soFile.withInputStream { input ->
+                            targetFile.withOutputStream { output ->
+                                output << input
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!foundFiles) {
+            println "❌ 警告: 没有找到任何 SO 文件!"
+        }
+
+        println "====== 🎯 SO 文件复制操作完成 ======"
+    }
+}
+
+
+// **CMake 任务完成后，必须先执行 `copySoFilesToArmeabi`**
+afterEvaluate {
+    tasks.findAll { task ->
+        task.name.startsWith("externalNativeBuild")
+    }.each { nativeTask ->
+        copySoFilesToArmeabi.mustRunAfter(nativeTask)
+    }
+
+    // 2. 所有 JNI 合并任务必须依赖 copySoFilesToArmeabi
+    tasks.findAll { task ->
+        task.name.startsWith("merge") && task.name.endsWith("Libs")
+    }.each { mergeTask ->
+        mergeTask.dependsOn(copySoFilesToArmeabi)
+    }
+}
+
+dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
@@ -49,5 +118,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-
 }
